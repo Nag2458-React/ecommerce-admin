@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   FaHeart,
@@ -13,20 +13,21 @@ import {
   FaUser,
 } from "react-icons/fa";
 
-import { Link, useNavigate } from "react-router-dom";
-
 const Home = () => {
   const navigate = useNavigate();
-
+const [selectedSizes, setSelectedSizes] = useState({});
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
-
+const handleSizeSelect = (productId, size) => {
+  setSelectedSizes({
+    ...selectedSizes,
+    [productId]: size,
+  });
+};
   // FETCH PRODUCTS
   const fetchProducts = async () => {
     try {
-      setLoading(true);
-
       const querySnapshot = await getDocs(collection(db, "products"));
 
       const data = querySnapshot.docs.map((doc) => ({
@@ -36,177 +37,409 @@ const Home = () => {
 
       setProducts(data);
     } catch (error) {
-      console.log(error);
+      console.log("Fetch Error:", error);
     } finally {
       setLoading(false);
     }
   };
+const addToCart = (product) => {
 
+  const selectedSize =
+    selectedSizes[product.id];
+
+  if (!selectedSize) {
+    alert("Please select size");
+    return;
+  }
+
+  let cart =
+    JSON.parse(localStorage.getItem("cart")) || [];
+
+  const existing = cart.find(
+    (item) =>
+      item.id === product.id &&
+      item.selectedSize === selectedSize
+  );
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      ...product,
+      selectedSize,
+      qty: 1,
+    });
+  }
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+
+  alert("Added To Cart");
+};
   useEffect(() => {
-    fetchProducts();
-  }, []);
+  fetchProducts();
+
+  const savedWishlist =
+    JSON.parse(localStorage.getItem("wishlist")) || [];
+
+  setWishlist(
+    savedWishlist.map((item) => item.id)
+  );
+}, []);
 
   // WISHLIST
-  const addWishlist = (id) => {
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+const toggleWishlist = (product) => {
+  let wishlist =
+    JSON.parse(localStorage.getItem("wishlist")) || [];
+
+  const exists = wishlist.find(
+    (item) => item.id === product.id
+  );
+
+  if (exists) {
+    wishlist = wishlist.filter(
+      (item) => item.id !== product.id
     );
-  };
+  } else {
+
+    if (!selectedSizes[product.id]) {
+      alert("Please select size");
+      return;
+    }
+
+    wishlist.push({
+      ...product,
+      selectedSize:
+        selectedSizes[product.id],
+    });
+  }
+
+  localStorage.setItem(
+    "wishlist",
+    JSON.stringify(wishlist)
+  );
+
+  setWishlist(
+    wishlist.map((item) => item.id)
+  );
+};
 
   const gotoLogin = () => {
     navigate("/login");
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("admin");
-    localStorage.removeItem("adminData");
-
+    localStorage.clear();
     alert("Logout Success");
     navigate("/login");
   };
 
   return (
-    <div className="d-flex">
+    <div className="container-fluid">
+
       {/* ================= SIDEBAR ================= */}
       <div
-        className="bg-dark text-white p-3"
-        style={{
-          width: "240px",
-          minHeight: "100vh",
-          position: "fixed",
-          left: 0,
-          top: 0,
-        }}
+        className=" text-white" style={{    borderBottom: "1px solid #ccc"}}
+        // style={{
+        //   width: "240px",
+        //   minHeight: "100vh",
+        //   position: "fixed",
+        // }}
       >
-        <h3 className="text-center mb-4">PET SHOP</h3>
+        {/* <h3 className="text-center mb-4"> PRODUCTS</h3> */}
 
-        <ul className="nav flex-column">
-          <li className="nav-item mb-3">
+        <ul className="nav shadow">
+
+          <li className="nav-item m-1">
             <Link to="/" className="nav-link text-white">
-              <FaHome /> <span className="ms-2">Home</span>
+              <FaHome /> Home
             </Link>
           </li>
 
-          <li className="nav-item mb-3">
-            <a href="#" className="nav-link text-white">
-              <FaThLarge /> <span className="ms-2">Categories</span>
+          <li className="nav-item m-1">
+            <a className="nav-link text-white" href="#">
+              <FaThLarge /> Categories
             </a>
           </li>
 
-          <li className="nav-item mb-3">
-            <a href="#" className="nav-link text-white">
-              <FaBoxOpen /> <span className="ms-2">Products</span>
+          <li className="nav-item m-1">
+            <a className="nav-link text-white" href="#">
+              <FaBoxOpen /> Products
             </a>
           </li>
 
-          <li className="nav-item mb-3">
-            <a href="#" className="nav-link text-white">
-              <FaHeart /> <span className="ms-2">Wishlist</span>
+          <li className="nav-item m-1">
+            <Link className="nav-link text-white" to="/wishlist">
+              <FaHeart /> Wishlist
+            </Link>
+          </li>
+
+          <li className="nav-item m-1">
+           <Link
+  to="/cart"
+  className="nav-link text-white"
+>
+  <FaShoppingCart /> Cart
+</Link>
+          </li>
+
+          <li className="nav-item m-1">
+            <a className="nav-link text-white" href="#">
+              <FaPhone /> Contact
             </a>
           </li>
 
-          <li className="nav-item mb-3">
-            <a href="#" className="nav-link text-white">
-              <FaShoppingCart /> <span className="ms-2">Cart</span>
-            </a>
-          </li>
-
-          <li className="nav-item mb-3">
-            <a href="#" className="nav-link text-white">
-              <FaPhone /> <span className="ms-2">Contact</span>
-            </a>
-          </li>
-
-          {/* LOGIN / LOGOUT */}
-          <li className="nav-item mt-4">
-            {localStorage.getItem("user") || localStorage.getItem("admin") ? (
-              <button className="btn btn-danger w-100" onClick={handleLogout}>
-                <FaUser /> <span className="ms-2">Logout</span>
+          <li className="m-1">
+            {localStorage.getItem("user") ? (
+              <button className="btn btn-info w-100" onClick={handleLogout}>
+                <FaUser /> Logout
               </button>
             ) : (
               <button className="btn btn-primary w-100" onClick={gotoLogin}>
-                <FaUser /> <span className="ms-2">Login</span>
+                <FaUser /> Login
               </button>
             )}
           </li>
+
         </ul>
       </div>
 
       {/* ================= PRODUCTS ================= */}
       <div
         className="container-fluid"
-        style={{
-          marginLeft: "240px",
-          background: "#f5f5f5",
-          minHeight: "100vh",
-        }}
+        // style={{
+        //   marginLeft: "240px",
+        //   background: "#f5f5f5",
+        //   minHeight: "100vh",
+        // }}
       >
         <div className="p-4">
-          <h2 className="mb-4">Latest Products</h2>
 
-          {/* LOADING */}
-          {loading && <h5>Loading products...</h5>}
+          <h4 className="mb-4 text-white">Latest Products</h4>
 
-          {/* EMPTY STATE */}
-          {!loading && products.length === 0 && <h5>No products found</h5>}
+          {loading && <p>Loading...</p>}
+
+          {!loading && products.length === 0 && (
+            <p>No products found</p>
+          )}
 
           <div className="row">
+
             {products.map((item) => (
+              
               <div className="col-md-3 mb-4" key={item.id}>
-                <div className="card border-0 shadow-sm h-100">
-                  {/* IMAGE SAFE CHECK */}
+
+                <div className="card shadow-sm h-100">
+
+                  {/* IMAGE SAFE BLOCK */}
                   <div style={{ height: "250px", background: "#eee" }}>
-                    <img
-                      src={
-                        item.imageUrl
-                          ? item.imageUrl
-                          : "https://via.placeholder.com/300"
-                      }
-                      alt={item.productName || "product"}
-                      className="w-100 h-100"
-                      style={{ objectFit: "cover" }}
-                    />
+                  <div style={{ height: "250px", background: "#eee" }}>
+  <img
+    src={
+      item?.imagePath
+        ? item.imagePath
+        : "/images/no-image.png"
+    }
+    alt={item?.productName || "product"}
+    style={{
+      height: "100%",
+    }}
+    onError={(e) => {
+      e.target.src = "/images/no-image.png";
+    }}
+  />
+</div>
                   </div>
 
-                  {/* BODY SAFE CHECK */}
-                  <div className="card-body">
-                    <h5>{item.productName || "No Name"}</h5>
+                  {/* BODY */}
+                 <div className="card-body">
 
-                    <p className="text-muted mb-1">
-                      {item.category || "No Category"}
-                    </p>
+  <h6 className="fw-bold">
+    {item?.productName}
+  </h6>
 
-                    <p className="text-success fw-bold">₹{item.price || 0}</p>
+  <span className="badge bg-primary mb-2">
+    {item?.category}
+  </span>
 
-                    {item.discountPrice ? (
-                      <p className="text-danger">
-                        Offer: ₹{item.discountPrice}
-                      </p>
-                    ) : null}
+  {/* <p className="mb-1">
+    <strong>Size:</strong> {item?.size}
+  </p>
+   */}
+<div className="d-flex justify-content-between align-items-start mb-2">
 
-                    <p>
-                      <strong>Brand:</strong> {item.brand || "N/A"}
-                    </p>
+  <div>
 
-                    <p>
-                      <strong>Weight:</strong> {item.weight || "N/A"}
-                    </p>
+    {item?.discountPrice ? (
+      <>
+        <span
+          style={{
+            textDecoration: "line-through",
+            color: "gray",
+            fontSize: "14px",
+          }}
+        >
+          ₹{item?.price}
+        </span>
 
-                    <p>
-                      <strong>Flavour:</strong> {item.flavour || "N/A"}
-                    </p>
+        <br />
 
-                    <p style={{ fontSize: "14px" }}>
-                      {item.description || "No description"}
-                    </p>
-                  </div>
+        <span
+          className="text-success fw-bold"
+          style={{ fontSize: "24px" }}
+        >
+          ₹{item?.discountPrice}
+        </span>
+
+        <br />
+
+        <small className="text-success fw-bold">
+          You Save ₹
+          {item?.price - item?.discountPrice}
+        </small>
+
+      </>
+    ) : (
+      <span
+        className="text-success fw-bold"
+        style={{ fontSize: "24px" }}
+      >
+        ₹{item?.price}
+      </span>
+    )}
+
+  </div>
+
+  {item?.discountPrice && (
+    <span
+      className="badge bg-danger"
+      style={{
+        fontSize: "12px",
+        height: "fit-content",
+      }}
+    >
+      {Math.round(
+        ((item.price - item.discountPrice) /
+          item.price) *
+          100
+      )}
+      % OFF
+    </span>
+  )}
+
+</div>
+{item?.discountPrice && (
+  <div
+    className="alert alert-success py-1 px-2 mt-2"
+    style={{
+      fontSize: "12px",
+    }}
+  >
+    🎉 You save ₹
+    {item.price - item.discountPrice}     on this product
+  </div>
+)}
+   <div className="d-flex">
+<select
+  className="form-select mb-2"
+  value={selectedSizes[item.id] || ""}
+  onChange={(e) =>
+    handleSizeSelect(
+      item.id,
+      e.target.value
+    )
+  } style={{width:"50%"}}
+>
+  <option value="">
+    Select Size
+  </option>
+
+  {item?.sizes?.map((size) => (
+    <option
+      key={size}
+      value={size}
+    >
+      {size}
+    </option>
+  ))}
+</select>
+ <p className="mb-1" style={{width:"50%"}}>
+    <strong>Color:</strong> {item?.color}
+  </p>
+</div>
+ 
+
+   <p className="mb-1">
+    <strong>Material:</strong> {item?.material}
+  </p>
+{/*
+  <p className="mb-1">
+    <strong>Qty:</strong> {item?.quantity}
+  </p> */}
+
+  {/* <p className="mb-1">
+    <strong>Occasion:</strong> {item?.occasion}
+  </p> */}
+
+
+
+ 
+
+  <p
+    // style={{
+    //   fontSize: "12px",
+    //   minHeight: "40px",
+    // }}
+  >
+    {item?.description}
+  </p>
+
+  {/* <div
+    className="alert alert-light p-2"
+    style={{ fontSize: "12px" }}
+  >
+    <strong>Highlights:</strong>
+    <br />
+    {item?.highlights}
+  </div>
+
+  <div
+    className="alert alert-warning p-2"
+    style={{ fontSize: "12px" }}
+  >
+    <strong>Care:</strong>
+    <br />
+    {item?.careInstructions}
+  </div> */}
+<div className="d-flex gap-3">
+  <button
+    className={`btn btn-sm  ${
+      wishlist.includes(item.id)
+        ? "btn-danger"
+        : "btn-outline-danger"
+    }`}
+    onClick={() => toggleWishlist(item)} style={{width:"48%"}}
+  >
+    ❤️ Wishlist
+  </button>
+<button className="btn btn-primary   "  onClick={() => addToCart(item)}  style={{width:"48%"}}>Add to Cart</button>
+</div>
+<br></br>
+<button  className="btn btn-success w-100">Buy Now</button>
+</div>
+
                 </div>
+
               </div>
             ))}
+
           </div>
+
         </div>
       </div>
+
     </div>
   );
 };
