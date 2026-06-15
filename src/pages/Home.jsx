@@ -208,7 +208,7 @@ const toggleWishlist = (product) => {
 
       {/* ================= PRODUCTS ================= */}
       <div
-        className="container-fluid"
+        className="products"
         // style={{
         //   marginLeft: "240px",
         //   background: "#f5f5f5",
@@ -268,7 +268,7 @@ const toggleWishlist = (product) => {
     <strong>Size:</strong> {item?.size}
   </p>
    */}
-<div className="d-flex justify-content-between align-items-start mb-2">
+<div className=" justify-content-between align-items-start mb-2">
 
   <div>
 
@@ -290,15 +290,15 @@ const toggleWishlist = (product) => {
           className="text-success fw-bold"
           style={{ fontSize: "24px" }}
         >
-          ₹{item?.discountPrice}
+        <strong>Price</strong>  ₹{item?.discountPrice}
         </span>
 
         <br />
 
-        <small className="text-success fw-bold">
+        {/* <small className="text-success fw-bold">
           You Save ₹
           {item?.price - item?.discountPrice}
-        </small>
+        </small> */}
 
       </>
     ) : (
@@ -365,13 +365,13 @@ const toggleWishlist = (product) => {
     </option>
   ))}
 </select>
- <p className="mb-1" style={{width:"50%"}}>
+ <p className="mb-1" style={{width:"50%",fontSize:'13px'}}>
     <strong>Color:</strong> {item?.color}
   </p>
 </div>
  
 
-   <p className="mb-1">
+   <p className="mb-1" style={{fontSize:'13px'}}>
     <strong>Material:</strong> {item?.material}
   </p>
 {/*
@@ -392,8 +392,9 @@ const toggleWishlist = (product) => {
     //   fontSize: "12px",
     //   minHeight: "40px",
     // }}
+    style={{fontSize:'13px'}}
   >
-    {item?.description}
+  <strong>Description:</strong>  {item?.description}
   </p>
 
   {/* <div
@@ -424,10 +425,10 @@ const toggleWishlist = (product) => {
   >
     ❤️ Wishlist
   </button>
-<button className="btn btn-primary   "  onClick={() => addToCart(item)}  style={{width:"48%"}}>Add to Cart</button>
+<button className="btn btn-primary   "  onClick={() => addToCart(item)}  style={{width:"50%"}}>Add to Cart</button>
 </div>
-<br></br>
-<button  className="btn btn-success w-100">Buy Now</button>
+
+<button  className="btn btn-success w-100 mt-2">Buy Now</button>
 </div>
 
                 </div>

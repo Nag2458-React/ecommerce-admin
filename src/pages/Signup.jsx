@@ -95,8 +95,30 @@ const Signup = () => {
 
     } catch (error) {
 
+  switch (error.code) {
+
+    case "auth/email-already-in-use":
+      alert(
+        "Email already exists. Try Login."
+      );
+      break;
+
+    case "auth/weak-password":
+      alert(
+        "Password should be at least 6 characters."
+      );
+      break;
+
+    case "auth/invalid-email":
+      alert(
+        "Invalid Email Address."
+      );
+      break;
+
+    default:
       alert(error.message);
-    }
+  }
+}
   };
 return (
 

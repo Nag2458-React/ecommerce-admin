@@ -14,6 +14,9 @@ import Cart from "./pages/Cart";
 import "react-toastify/dist/ReactToastify.css";
 import Categories from "./admin/pages/Categories";
 import LowStock from "./admin/pages/LowStock";
+import Customers from "./admin/pages/Customers";
+import Reports from "./admin/pages/Reports";
+import Settings from "./admin/pages/Settings";
 const App = () => {
   return (
     <BrowserRouter>
@@ -28,12 +31,24 @@ const App = () => {
         <Route  path="/cart"  element={<Cart />}/>
         <Route  path="/categories"  element={<Categories />}/>
         <Route
+  path="/reports"
+  element={<Reports />}
+/>
+<Route
+  path="/settings"
+  element={<Settings />}
+/>
+        <Route
   path="/low-stock"
   element={<LowStock />}
 />
         <Route
   path="/wishlist"
   element={<Wishlist />}
+/>
+<Route
+  path="/customers"
+  element={<Customers />}
 />
       </Routes>
 

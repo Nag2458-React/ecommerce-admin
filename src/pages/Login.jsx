@@ -91,6 +91,7 @@ const Login = () => {
       "
       style={{
         minHeight: "100vh",
+        textAlign:'left',
         backgroundColor: "#f5f5f5",
       }}
     >

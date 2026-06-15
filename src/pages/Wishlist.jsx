@@ -119,7 +119,7 @@ const addToCart = (product) => {
       </nav>
 
       {/* PAGE CONTENT */}
-      <div className="container mt-4">
+      <div className="container mt-4 wishlist">
 
         <h2 className="mb-4 text-center text-white">
           ❤️ My Wishlist
@@ -170,7 +170,7 @@ const addToCart = (product) => {
     {item.category}
   </span>
 
-  <hr />
+  
 
   <p>
     <strong>Size:</strong>{" "}
@@ -198,7 +198,7 @@ const addToCart = (product) => {
     {item.description || "-"}
   </p>
 
-  <hr />
+ 
 
   {item.discountPrice > 0 ? (
     <>

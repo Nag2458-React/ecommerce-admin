@@ -104,7 +104,7 @@ const totalItems = cart.reduce(
   0
 );
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 cart">
 
       <div className="d-flex justify-content-between mb-4">
 
@@ -172,7 +172,7 @@ const totalItems = cart.reduce(
     {item.category}
   </span>
 
-  <hr />
+ 
 
   <p>
     <strong>Size :</strong>
@@ -243,7 +243,7 @@ const totalItems = cart.reduce(
           className="
             badge
             bg-danger
-            ms-2
+            
           "
         >
           {Math.round(
@@ -273,7 +273,7 @@ const totalItems = cart.reduce(
       d-flex
       align-items-center
       mb-3
-    "style={{paddingLeft: "50px"}}
+    "style={{paddingLeft: "30px"}}
   >
 
     <button
@@ -317,7 +317,7 @@ const totalItems = cart.reduce(
     className="
       alert
       alert-success
-      py-2
+      
     "
   >
     Sub Total :

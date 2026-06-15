@@ -144,3 +144,97 @@ code {
 ul.nav.flex-column .nav-item {
     text-align: left;
 }
+label {
+    font-weight: bold;
+    font-size: 15px;
+}
+.products .card img{
+  width: 100%;
+}
+.badge {
+    padding: 5px !important;
+}
+.products button {
+    padding: 3px;
+    font-size: 14px;
+}
+.products select {
+    font-size: 13px;
+}
+hr {
+    margin: 0rem 0 !important;
+}
+.wishlist p{
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+.wishlist button {
+      font-size: 15px;
+    padding: 1px !important;
+}
+.cart p {
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+
+.cart button {
+    padding: 0 15px;
+        font-size: 15px;
+}
+.alert.alert-success {
+    padding: 1px;
+    font-size: 13px;
+    font-weight: bold;
+}
+h5{
+  font-size: 15px !important;
+}
+.dashboard h4{
+  font-size: 22px !important;
+}
+.bg{
+  background:url(https://www.littlefingersindia.com/wp-content/uploads/2023/10/IMG_20230930_1211161-1.jpg);
+      background-size: cover;
+}
+.bgdark {
+    background-color: #250acad4;
+}
+.btndanger{
+background: #ffffff !important;
+    color: #000 !important;
+    border: 0 !important;
+    }
+    .card-body {
+    border-top: 1px solid #442bca;
+    border-radius: 5px;
+    padding: 10px 10px 5px !important;
+}
+h1 {
+    font-size: 25px !important;
+}
+table th {
+    background: #3e25c3 !important;
+    color: #fff !important;
+}
+h2 {
+    font-size: 25px;
+}
+table tr th, table tr td {
+    padding: 3px !important;
+}
+td.action-buttons {
+ padding:10px !important;
+}
+td.action-buttons .d-flex{
+  gap:20px;
+}
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+td.action-buttons svg:first-child {
+    color: #3e25c3;
+}
+td.action-buttons svg:last-child {
+    color: red;
+}
