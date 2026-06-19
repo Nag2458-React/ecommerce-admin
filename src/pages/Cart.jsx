@@ -3,62 +3,89 @@ import React, {
   useState,
 } from "react";
 
-import { Link } from "react-router-dom";
+import { Link,useNavigate  } from "react-router-dom";
+import Navbar from "./Navbar";
 
 const Cart = () => {
-
+const navigate = useNavigate();
   const [cart, setCart] = useState([]);
-
+const user =
+  localStorage.getItem(
+    "currentUser"
+  );
   useEffect(() => {
-    const data =
-      JSON.parse(
-        localStorage.getItem("cart")
-      ) || [];
+   const user =
+  localStorage.getItem(
+    "currentUser"
+  );
 
-    setCart(data);
+const data =
+  JSON.parse(
+    localStorage.getItem(
+      `cart_${user}`
+    )
+  ) || [];
+
+setCart(data);
   }, []);
 
   const saveCart = (updated) => {
     setCart(updated);
 
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(updated)
-    );
+  const user =
+  localStorage.getItem(
+    "currentUser"
+  );
+
+localStorage.setItem(
+  `cart_${user}`,
+  JSON.stringify(updated)
+);
   };
 
-  const updateQty = (id, size, type) => {
+const updateQty = (id, size, type) => {
 
-    const updated = cart.map((item) => {
+  const updated = cart.map((item) => {
 
-      if (
-        item.id === id &&
-        item.selectedSize === size
-      ) {
+    if (
+      item.id === id &&
+      item.selectedSize === size
+    ) {
 
-        if (type === "plus") {
-          return {
-            ...item,
-            qty: item.qty + 1,
-          };
+      if (type === "plus") {
+
+        if (item.qty >= item.stock) {
+
+          alert(
+            `${item.productName} Out Of Stock`
+          );
+
+          return item;
         }
 
-        if (
-          type === "minus" &&
-          item.qty > 1
-        ) {
-          return {
-            ...item,
-            qty: item.qty - 1,
-          };
-        }
+        return {
+          ...item,
+          qty: item.qty + 1,
+        };
       }
 
-      return item;
-    });
+      if (
+        type === "minus" &&
+        item.qty > 1
+      ) {
+        return {
+          ...item,
+          qty: item.qty - 1,
+        };
+      }
+    }
 
-    saveCart(updated);
-  };
+    return item;
+  });
+
+  saveCart(updated);
+};
+
 
   const removeItem = (
     id,
@@ -103,7 +130,12 @@ const totalItems = cart.reduce(
     sum + Number(item.qty || 1),
   0
 );
+window.dispatchEvent(
+  new Event("cartUpdated")
+);
   return (
+    <>
+    <Navbar />
     <div className="container mt-4 cart">
 
       <div className="d-flex justify-content-between mb-4">
@@ -197,7 +229,22 @@ const totalItems = cart.reduce(
     {" "}
     {item.stock}
   </p>
-
+{
+  item.qty >= item.stock && (
+    <div
+      className="
+      alert
+      alert-danger
+      text-center
+      mt-2
+      mb-2
+      p-2
+      "
+    >
+      Out Of Stock
+    </div>
+  )
+}
   <div className="mb-2">
 
     {item.discountPrice > 0 ? (
@@ -298,18 +345,21 @@ const totalItems = cart.reduce(
       {item.qty}
     </span>
 
-    <button
-      className="btn btn-success"
-      onClick={() =>
-        updateQty(
-          item.id,
-          item.selectedSize,
-          "plus"
-        )
-      }
-    >
-      +
-    </button>
+  <button
+  className="btn btn-success"
+  disabled={
+    item.qty >= item.stock
+  }
+  onClick={() =>
+    updateQty(
+      item.id,
+      item.selectedSize,
+      "plus"
+    )
+  }
+>
+  +
+</button>
 
   </div>
 
@@ -415,6 +465,9 @@ const totalItems = cart.reduce(
         w-100
         mt-3
       "
+       onClick={() =>
+    navigate("/orders")
+  }
     >
       Proceed To Checkout
     </button>
@@ -429,6 +482,7 @@ const totalItems = cart.reduce(
       )}
 
     </div>
+    </>
   );
 };
 

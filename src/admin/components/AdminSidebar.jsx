@@ -67,7 +67,12 @@ const AdminSidebar = () => {
               <span className="ms-2">View Products</span>
             </Link>
           </li>
-
+<li className="nav-item mb-2">
+            <Link to="/cruds" className="nav-link text-white">
+              <FaCog />
+              <span className="ms-2">Cruds</span>
+            </Link>
+          </li>
           {/* Categories */}
 
           <li className="nav-item mb-2">

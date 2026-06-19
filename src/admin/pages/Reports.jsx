@@ -290,7 +290,7 @@ const Reports = () => {
           </div>
           <div className="col-md-6 mb-4">
             <div className="card shadow">
-              <div className="card-body">
+              <div className="card-body c-share">
                 <h5>Category Share</h5>
 
                 <Pie data={categoryChart} />
@@ -299,7 +299,7 @@ const Reports = () => {
           </div>
           <div className="col-md-6 mb-4">
             <div className="card shadow">
-              <div className="card-body">
+              <div className="card-body c-share">
                 <h5>Inventory Value</h5>
 
                 <Doughnut data={inventoryChart} />

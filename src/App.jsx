@@ -17,19 +17,35 @@ import LowStock from "./admin/pages/LowStock";
 import Customers from "./admin/pages/Customers";
 import Reports from "./admin/pages/Reports";
 import Settings from "./admin/pages/Settings";
+import UserProtectedRoute from "./UserProtectedRoute";
+import SessionManager from "./SessionManager";
+import MyOrders from "./pages/MyOrders";
+import Cruds from "./Cruds";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
 const App = () => {
   return (
     <BrowserRouter>
-
+<SessionManager />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<UserProtectedRoute><Home /></UserProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/products" element={<Products />} />
          <Route path="/view-products" element={<ViewProducts />} />
-        <Route  path="/cart"  element={<Cart />}/>
+        <Route  path="/cart"  element={<UserProtectedRoute><Cart /></UserProtectedRoute>}/>
         <Route  path="/categories"  element={<Categories />}/>
+        <Route  path="/cruds"  element={<Cruds />}/>
+        <Route  path="/orders"  element={<Orders />}/>
+        <Route
+  path="/profile"
+  element={<Profile />}
+/>
+        <Route
+  path="/myorders"
+  element={<MyOrders />}
+/>
         <Route
   path="/reports"
   element={<Reports />}
@@ -44,7 +60,7 @@ const App = () => {
 />
         <Route
   path="/wishlist"
-  element={<Wishlist />}
+  element={<UserProtectedRoute><Wishlist /></UserProtectedRoute>}
 />
 <Route
   path="/customers"

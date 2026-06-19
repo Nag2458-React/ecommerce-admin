@@ -9,6 +9,7 @@ import { db } from "../../firebase/firebase";
 import AdminSidebar from "../components/AdminSidebar";
 
 const Dashboard = () => {
+  
   const isAdmin = localStorage.getItem("admin");
 
   const [totalProducts, setTotalProducts] = useState(0);

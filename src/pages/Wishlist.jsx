@@ -6,24 +6,58 @@ import {
   FaShoppingCart,
   FaUser,
 } from "react-icons/fa";
+import Navbar from "./Navbar";
 
 const Wishlist = () => {
   const navigate = useNavigate();
+useEffect(() => {
 
+  const user =
+    localStorage.getItem("user");
+
+  if (!user) {
+
+    navigate("/login", {
+      replace: true,
+    });
+
+  }
+
+}, []);
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
-    const data =
-      JSON.parse(localStorage.getItem("wishlist")) || [];
+  const user =
+  localStorage.getItem(
+    "currentUser"
+  );
 
-    setWishlist(data);
+const data =
+  JSON.parse(
+    localStorage.getItem(
+      `wishlist_${user}`
+    )
+  ) || [];
+
+setWishlist(data);
   }, []);
 const addToCart = (product) => {
-  let cart =
-    JSON.parse(localStorage.getItem("cart")) || [];
+
+  const user =
+localStorage.getItem(
+  "currentUser"
+);
+
+let cart =
+JSON.parse(
+  localStorage.getItem(
+    `cart_${user}`
+  )
+) || [];
 
   const exists = cart.find(
-    (item) => item.id === product.id
+    (item) =>
+      item.id === product.id
   );
 
   if (exists) {
@@ -35,10 +69,10 @@ const addToCart = (product) => {
     });
   }
 
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
+ localStorage.setItem(
+  `cart_${user}`,
+  JSON.stringify(cart)
+);
 
   navigate("/cart");
 };
@@ -49,22 +83,35 @@ const addToCart = (product) => {
 
     setWishlist(updated);
 
-    localStorage.setItem(
-      "wishlist",
-      JSON.stringify(updated)
-    );
+    const user =
+  localStorage.getItem(
+    "currentUser"
+  );
+
+localStorage.setItem(
+  `wishlist_${user}`,
+  JSON.stringify(updated)
+);
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
+const handleLogout = () => {
+
+  localStorage.removeItem("user");
+
+  localStorage.removeItem("admin");
+
+  localStorage.removeItem("adminData");
+
+  localStorage.removeItem("currentUser");
+
+  navigate("/login");
+};
 
   return (
     <div>
-
+<Navbar />
       {/* HEADER */}
-      <nav className="navbar navbar-expand-lg   shadow">
+      {/* <nav className="navbar navbar-expand-lg   shadow">
         <div className="container">
 
           <Link className="navbar-brand fw-bold text-white" to="/">
@@ -92,11 +139,7 @@ const addToCart = (product) => {
             >
               <FaShoppingCart /> Cart
             </Link>
-            {/* <button
-              className="btn btn-outline-warning me-2"
-            >
-              <FaShoppingCart /> Cart
-            </button> */}
+            
 
             {localStorage.getItem("user") ? (
               <button
@@ -116,7 +159,7 @@ const addToCart = (product) => {
           </div>
 
         </div>
-      </nav>
+      </nav> */}
 
       {/* PAGE CONTENT */}
       <div className="container mt-4 wishlist">

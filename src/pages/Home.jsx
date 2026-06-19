@@ -4,17 +4,38 @@ import { db } from "../firebase/firebase";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
-  FaHeart,
+   FaHeart,
   FaShoppingCart,
   FaHome,
   FaThLarge,
   FaBoxOpen,
   FaPhone,
+  FaUserCircle,
   FaUser,
+  FaClipboardList,
 } from "react-icons/fa";
+import Navbar from "./Navbar";
 
 const Home = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+// logout ayyaka , back arrow press chesthe back avvakunda ee kinda code use chestam
+  const user =
+    localStorage.getItem("user");
+
+  if (!user) {
+
+    navigate("/login", {
+      replace: true,
+    });
+
+  }
+
+}, []);
+
+
+
+
 const [selectedSizes, setSelectedSizes] = useState({});
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
@@ -44,6 +65,17 @@ const handleSizeSelect = (productId, size) => {
   };
 const addToCart = (product) => {
 
+  const user =
+    localStorage.getItem(
+      "currentUser"
+    );
+
+  if (!user) {
+    alert("Please Login First");
+    navigate("/login");
+    return;
+  }
+
   const selectedSize =
     selectedSizes[product.id];
 
@@ -53,7 +85,11 @@ const addToCart = (product) => {
   }
 
   let cart =
-    JSON.parse(localStorage.getItem("cart")) || [];
+    JSON.parse(
+      localStorage.getItem(
+        `cart_${user}`
+      )
+    ) || [];
 
   const existing = cart.find(
     (item) =>
@@ -62,17 +98,21 @@ const addToCart = (product) => {
   );
 
   if (existing) {
+
     existing.qty += 1;
+
   } else {
+
     cart.push({
       ...product,
       selectedSize,
       qty: 1,
     });
+
   }
 
   localStorage.setItem(
-    "cart",
+    `cart_${user}`,
     JSON.stringify(cart)
   );
 
@@ -81,27 +121,54 @@ const addToCart = (product) => {
   useEffect(() => {
   fetchProducts();
 
-  const savedWishlist =
-    JSON.parse(localStorage.getItem("wishlist")) || [];
-
-  setWishlist(
-    savedWishlist.map((item) => item.id)
+  const user =
+  localStorage.getItem(
+    "currentUser"
   );
+
+const savedWishlist =
+  JSON.parse(
+    localStorage.getItem(
+      `wishlist_${user}`
+    )
+  ) || [];
+
+setWishlist(
+  savedWishlist.map(
+    (item) => item.id
+  )
+);
 }, []);
 
   // WISHLIST
 const toggleWishlist = (product) => {
+
+  const user =
+    localStorage.getItem("currentUser");
+
+  if (!user) {
+    alert("Please Login");
+    navigate("/login");
+    return;
+  }
+
   let wishlist =
-    JSON.parse(localStorage.getItem("wishlist")) || [];
+    JSON.parse(
+      localStorage.getItem(
+        `wishlist_${user}`
+      )
+    ) || [];
 
   const exists = wishlist.find(
     (item) => item.id === product.id
   );
 
   if (exists) {
+
     wishlist = wishlist.filter(
       (item) => item.id !== product.id
     );
+
   } else {
 
     if (!selectedSizes[product.id]) {
@@ -117,7 +184,7 @@ const toggleWishlist = (product) => {
   }
 
   localStorage.setItem(
-    "wishlist",
+    `wishlist_${user}`,
     JSON.stringify(wishlist)
   );
 
@@ -130,27 +197,35 @@ const toggleWishlist = (product) => {
     navigate("/login");
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    alert("Logout Success");
-    navigate("/login");
-  };
+const handleLogout = () => {
+
+  localStorage.removeItem("user");
+  localStorage.removeItem("admin");
+  localStorage.removeItem("adminData");
+  localStorage.removeItem("currentUser");
+
+  navigate("/login", {
+    replace: true,
+  });
+
+};
 
   return (
-    <div className="container-fluid">
+    <div className="">
 
       {/* ================= SIDEBAR ================= */}
       <div
-        className=" text-white" style={{    borderBottom: "1px solid #ccc"}}
+        
         // style={{
         //   width: "240px",
         //   minHeight: "100vh",
         //   position: "fixed",
         // }}
       >
+        <Navbar />
         {/* <h3 className="text-center mb-4"> PRODUCTS</h3> */}
 
-        <ul className="nav shadow">
+        {/* <ul className="nav shadow">
 
           <li className="nav-item m-1">
             <Link to="/" className="nav-link text-white">
@@ -184,13 +259,27 @@ const toggleWishlist = (product) => {
   <FaShoppingCart /> Cart
 </Link>
           </li>
-
+<li className="nav-item m-1">
+  <Link
+    to="/myorders"
+    className="nav-link text-white"
+  >
+    <FaClipboardList /> Orders
+  </Link>
+</li>
           <li className="nav-item m-1">
             <a className="nav-link text-white" href="#">
               <FaPhone /> Contact
             </a>
           </li>
-
+    <li className="nav-item m-1">
+  <Link
+    to="/profile"
+    className="nav-link text-white"
+  >
+    <FaUserCircle /> Profile
+  </Link>
+</li>
           <li className="m-1">
             {localStorage.getItem("user") ? (
               <button className="btn btn-info w-100" onClick={handleLogout}>
@@ -203,7 +292,7 @@ const toggleWishlist = (product) => {
             )}
           </li>
 
-        </ul>
+        </ul> */}
       </div>
 
       {/* ================= PRODUCTS ================= */}
@@ -215,7 +304,7 @@ const toggleWishlist = (product) => {
         //   minHeight: "100vh",
         // }}
       >
-        <div className="p-4">
+        <div className="container">
 
           <h4 className="mb-4 text-white">Latest Products</h4>
 
