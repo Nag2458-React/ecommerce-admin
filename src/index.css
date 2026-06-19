@@ -252,3 +252,12 @@ td.action-buttons svg:last-child {
     width: auto !important;
     padding: 5px 8px !important;
 }
+.alert {
+  margin:5px 0px !important;
+}
+.navbar{
+  background: #3e25c3 !important;
+}
+.navbar .nav-link{
+  color: #fff;
+}
