@@ -152,7 +152,9 @@ const ProductDetails = () => {
     `cart_${user}`,
     JSON.stringify(cart)
   );
-
+window.dispatchEvent(
+  new Event("cartUpdated")
+);
   alert("Added To Cart");
 };
 

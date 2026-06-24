@@ -41,63 +41,61 @@ const Navbar = () => {
     setCartCount] =    useState(0);
 const [wishlistCount,
   setWishlistCount] =  useState(0);
-  useEffect(() => {
+ useEffect(() => {
+  const loadCounts = () => {
+    const cart =
+      JSON.parse(
+        localStorage.getItem(
+          `cart_${user}`
+        )
+      ) || [];
 
-    const loadCart = () => {
-
-      const cart =
-        JSON.parse(
-          localStorage.getItem(
-            `cart_${user}`
-          )
-        ) || [];
-
-      const totalQty =
-        cart.reduce(
-          (
-            sum,
-            item
-          ) =>
-            sum +
-            Number(
-              item.qty || 1
-            ),
-          0
-        );
-
-      setCartCount(
-        totalQty
+    const totalQty =
+      cart.reduce(
+        (sum, item) =>
+          sum +
+          Number(item.qty || 1),
+        0
       );
-      // Wishlist Count
-  const wishlist =
-    JSON.parse(
-      localStorage.getItem(
-        `wishlist_${user}`
-      )
-    ) || [];
 
-  setWishlistCount(
-    wishlist.length
+    setCartCount(totalQty);
+
+    const wishlist =
+      JSON.parse(
+        localStorage.getItem(
+          `wishlist_${user}`
+        )
+      ) || [];
+
+    setWishlistCount(
+      wishlist.length
+    );
+  };
+
+  loadCounts();
+
+  window.addEventListener(
+    "cartUpdated",
+    loadCounts
   );
-    };
 
-    loadCart();
+  window.addEventListener(
+    "wishlistUpdated",
+    loadCounts
+  );
 
-    window.addEventListener(
+  return () => {
+    window.removeEventListener(
       "cartUpdated",
-      loadCart
+      loadCounts
     );
 
-    return () => {
-
-      window.removeEventListener(
-        "cartUpdated",
-        loadCart
-      );
-
-    };
-
-  }, [user]);
+    window.removeEventListener(
+      "wishlistUpdated",
+      loadCounts
+    );
+  };
+}, [user]);
 
   const handleLogout = async () => {
   try {

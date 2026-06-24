@@ -114,7 +114,9 @@ const Home = () => {
     }
 
     localStorage.setItem(`cart_${user}`, JSON.stringify(cart));
-
+    window.dispatchEvent(
+  new Event("cartUpdated")
+);
     alert("Added To Cart");
   };
 
@@ -185,7 +187,9 @@ const Home = () => {
     }
 
     localStorage.setItem(`wishlist_${user}`, JSON.stringify(wishlist));
-
+    window.dispatchEvent(
+  new Event("wishlistUpdated")
+);
     setWishlist(wishlist.map((item) => item.id));
     setWishlistItems(wishlist);
   };
