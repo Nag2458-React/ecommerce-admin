@@ -2,51 +2,92 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SessionManager = () => {
-
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const updateActivity = () => {
+      localStorage.setItem(
+        "lastActivity",
+        Date.now()
+      );
+    };
 
-    const timer =
-      setInterval(() => {
+    updateActivity();
 
-        const loginTime =
-          localStorage.getItem(
-            "loginTime"
-          );
+    window.addEventListener(
+      "mousemove",
+      updateActivity
+    );
 
-        if (!loginTime) return;
+    window.addEventListener(
+      "keydown",
+      updateActivity
+    );
 
-        const diff =
-          Date.now() -
-          Number(loginTime);
+    window.addEventListener(
+      "click",
+      updateActivity
+    );
 
-        if (
-          diff >
-          30 * 60 * 1000
-        ) {
+    window.addEventListener(
+      "scroll",
+      updateActivity
+    );
 
-          localStorage.clear();
+    const interval = setInterval(() => {
+      const lastActivity =
+        localStorage.getItem(
+          "lastActivity"
+        );
 
-          alert(
-            "Session Expired"
-          );
+      if (!lastActivity) return;
 
-          navigate(
-            "/login",
-            {
-              replace: true,
-            }
-          );
+      const now = Date.now();
 
-        }
+      const diff =
+        now - Number(lastActivity);
 
-      }, 5000);
+      // 10 Minutes
+      if (diff > 10 * 60 * 1000) {
+        localStorage.removeItem("user");
+        localStorage.removeItem("admin");
+        localStorage.removeItem("adminData");
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("lastActivity");
 
-    return () =>
-      clearInterval(timer);
+        alert(
+          "Session Expired. Please Login Again."
+        );
 
+        navigate("/login", {
+          replace: true,
+        });
+      }
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+
+      window.removeEventListener(
+        "mousemove",
+        updateActivity
+      );
+
+      window.removeEventListener(
+        "keydown",
+        updateActivity
+      );
+
+      window.removeEventListener(
+        "click",
+        updateActivity
+      );
+
+      window.removeEventListener(
+        "scroll",
+        updateActivity
+      );
+    };
   }, [navigate]);
 
   return null;

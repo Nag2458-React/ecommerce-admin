@@ -28,27 +28,17 @@ const Home = () => {
       });
     }
   }, []);
-  const isWishlisted = (productId) => {
-    return wishlistItems.some((item) => item.id === productId);
-  };
-  const [wishlistItems, setWishlistItems] = useState([]);
+
   const [selectedSizes, setSelectedSizes] = useState({});
-
-  const [selectedColors, setSelectedColors] = useState({});
-
   const [products, setProducts] = useState([]);
-
   const [wishlist, setWishlist] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const handleSizeSelect = (productId, size) => {
     setSelectedSizes({
       ...selectedSizes,
       [productId]: size,
     });
   };
-
   // FETCH PRODUCTS
   const fetchProducts = async () => {
     try {
@@ -60,39 +50,25 @@ const Home = () => {
       }));
 
       setProducts(data);
-
-      const defaultColors = {};
-
-      data.forEach((item) => {
-        if (item.colors && item.colors.length > 0) {
-          defaultColors[item.id] = item.colors[0];
-        }
-      });
-
-      setSelectedColors(defaultColors);
     } catch (error) {
       console.log("Fetch Error:", error);
     } finally {
       setLoading(false);
     }
   };
-
   const addToCart = (product) => {
     const user = localStorage.getItem("currentUser");
 
     if (!user) {
       alert("Please Login First");
-
       navigate("/login");
-
       return;
     }
 
     const selectedSize = selectedSizes[product.id];
 
-    if (product.sizes?.length > 0 && !selectedSize) {
-      alert("Please Select Size");
-
+    if (!selectedSize) {
+      alert("Please select size");
       return;
     }
 
@@ -107,8 +83,7 @@ const Home = () => {
     } else {
       cart.push({
         ...product,
-        selectedSize: selectedSize || "",
-        selectedColor: selectedColors[product.id] || null,
+        selectedSize,
         qty: 1,
       });
     }
@@ -117,7 +92,6 @@ const Home = () => {
 
     alert("Added To Cart");
   };
-
   useEffect(() => {
     fetchProducts();
 
@@ -127,46 +101,15 @@ const Home = () => {
       JSON.parse(localStorage.getItem(`wishlist_${user}`)) || [];
 
     setWishlist(savedWishlist.map((item) => item.id));
-
-    setWishlistItems(savedWishlist);
-
-    // Load Saved Size & Color
-    const savedSizes = {};
-    const savedColors = {};
-
-    savedWishlist.forEach((item) => {
-      if (item.selectedSize) {
-        savedSizes[item.id] = item.selectedSize;
-      }
-
-      if (item.selectedColor) {
-        savedColors[item.id] = item.selectedColor;
-      }
-    });
-
-    setSelectedSizes(savedSizes);
-
-    setSelectedColors((prev) => ({
-      ...prev,
-      ...savedColors,
-    }));
   }, []);
+
+  // WISHLIST
   const toggleWishlist = (product) => {
     const user = localStorage.getItem("currentUser");
 
     if (!user) {
       alert("Please Login");
-
       navigate("/login");
-
-      return;
-    }
-
-    const selectedSize = selectedSizes[product.id];
-
-    if (product.sizes?.length > 0 && !selectedSize) {
-      alert("Please Select Size");
-
       return;
     }
 
@@ -177,17 +120,20 @@ const Home = () => {
     if (exists) {
       wishlist = wishlist.filter((item) => item.id !== product.id);
     } else {
+      if (!selectedSizes[product.id]) {
+        alert("Please select size");
+        return;
+      }
+
       wishlist.push({
         ...product,
-        selectedSize,
-        selectedColor: selectedColors[product.id] || null,
+        selectedSize: selectedSizes[product.id],
       });
     }
 
     localStorage.setItem(`wishlist_${user}`, JSON.stringify(wishlist));
 
     setWishlist(wishlist.map((item) => item.id));
-    setWishlistItems(wishlist);
   };
 
   const gotoLogin = () => {
@@ -196,11 +142,8 @@ const Home = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-
     localStorage.removeItem("admin");
-
     localStorage.removeItem("adminData");
-
     localStorage.removeItem("currentUser");
 
     navigate("/login", {
@@ -208,19 +151,6 @@ const Home = () => {
     });
   };
 
-  const getDeliveryDate = () => {
-    const today = new Date();
-
-    const randomDays = Math.floor(Math.random() * 5) + 3;
-
-    today.setDate(today.getDate() + randomDays);
-
-    return today.toLocaleDateString("en-IN", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
-  };
   return (
     <div className="">
       {/* ================= SIDEBAR ================= */}
@@ -308,7 +238,7 @@ const Home = () => {
       {/* ================= PRODUCTS ================= */}
       <div className="products">
         <div className="container">
-          <h4 className="m-3 text-black">Latest Products</h4>
+          <h4 className="mb-4 text-white">Latest Products</h4>
 
           {loading && <p>Loading...</p>}
 
@@ -318,38 +248,16 @@ const Home = () => {
             {products.map((item) => (
               <div className="col-md-3 mb-4" key={item.id}>
                 <div
-                  className="card  shadow"
-                  onClick={() =>
-                    navigate(`/product/${item.id}`, {
-                      state: {
-                        selectedColor: selectedColors[item.id],
-                      },
-                    })
-                  }
-                >
-                  <button
-                    className={`btn ${
-                      wishlist.includes(item.id)
-                        ? "btn-danger"
-                        : "btn-outline-danger"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleWishlist(item);
-                    }}
-                    style={{
-                      width: "12%",
-                      position: "absolute",
-                      right: "0",
-                      margin: "15px",
-                    }}
-                  >
-                    ❤️
-                  </button>
+  className="card shadow-sm h-100"
+  style={{ cursor: "pointer" }}
+  onClick={() =>
+    navigate(`/product/${item.id}`)
+  }
+> 
                   {/* IMAGE SAFE BLOCK */}
-
-                  <div style={{ background: "#eee" }}>
-                    {/* <img
+                  <div style={{ height: "200px", background: "#eee" }}>
+                    <div style={{ height: "200px", background: "#eee" }}>
+                      <img
                         src={
                           item?.imagePath
                             ? item.imagePath
@@ -362,227 +270,53 @@ const Home = () => {
                         onError={(e) => {
                           e.target.src = "/images/no-image.png";
                         }}
-                      /> */}
-                    <img
-                      src={selectedColors[item.id]?.image || item.imagePath}
-                      alt={item.productName}
-                      className="card-img-top"
-                      style={{
-                        height: "150px",
-                        objectFit: "cover",
-                        width: "100%",
-                      }}
-                      onError={(e) => {
-                        e.target.src = "/images/no-image.png";
-                      }}
-                    />
-                  </div>
-
-                  <div className="card-body text-center">
-                   <div className="mb-2">
-  <span className="fw-bold" style={{color:"rgb(62 37 195)"}}>
-    {item.category}
-  </span>
-
-  {/* <div
-    className="mt-1 text-muted"
-    style={{
-      fontSize: "13px",
-    }}
-  >
-    {item.productName}
-  </div> */}
-</div>
-                    <p
-                      className="text-muted mb-2"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        fontSize: "12px",
-                      }}
-                    >
-                      {item.description}
-                    </p>
-                    {/* Size Dropdown */}
-                    <div className="d-flex gap-2">
-                      <div style={{ width: "48%" }}>
-                        {item.sizes?.length > 0 && (
-                          <select
-                            className="form-select form-select-sm mb-2"
-                            value={selectedSizes[item.id] || ""}
-                            disabled={isWishlisted(item.id)}
-                            style={{
-                              backgroundColor: isWishlisted(item.id)
-                                ? "#f5f5f5"
-                                : "",
-                              cursor: isWishlisted(item.id)
-                                ? "not-allowed"
-                                : "pointer",
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) =>
-                              handleSizeSelect(item.id, e.target.value)
-                            }
-                          >
-                            <option value="">Select Size</option>
-
-                            {item.sizes.map((size) => (
-                              <option key={size} value={size}>
-                                {size}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                      <div style={{ width: "48%" }}>
-                        {item.colors?.length > 0 && (
-                          <div
-                            className="d-flex align-items-center gap-2"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <select
-                              className="form-select form-select-sm"
-                              value={selectedColors[item.id]?.name || ""}
-                              disabled={isWishlisted(item.id)}
-                              style={{
-                                backgroundColor: isWishlisted(item.id)
-                                  ? "#f5f5f5"
-                                  : "",
-                                cursor: isWishlisted(item.id)
-                                  ? "not-allowed"
-                                  : "pointer",
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              onChange={(e) => {
-                                const colorObj = item.colors.find(
-                                  (clr) => clr.name === e.target.value,
-                                );
-
-                                setSelectedColors({
-                                  ...selectedColors,
-                                  [item.id]: colorObj,
-                                });
-                              }}
-                            >
-                              {item.colors.map((color) => (
-                                <option key={color.name} value={color.name}>
-                                  {color.name}
-                                </option>
-                              ))}
-                            </select>
-
-                            {/* Selected Color Preview */}
-                            <div
-                              style={{
-                                width: "25px",
-                                height: "25px",
-                                borderRadius: "6px",
-                                background: selectedColors[item.id]?.code,
-                                border: "1px solid #ccc",
-                                flexShrink: 0,
-                              }}
-                            />
-                          </div>
-                        )}
-                      </div>
+                      />
                     </div>
+                  </div>
+<div className="card-body text-center">
+  <h5 className="fw-bold mb-2">
+    {item.productName}
+  </h5>
 
-                    {item.discountPrice ? (
-                      <>
-                        <h4 className="mb-1" style={{ fontSize: "14px" }}>
-                          <span className="text-danger">
-                            {Math.round(
-                              ((item.price - item.discountPrice) / item.price) *
-                                100,
-                            )}
-                            % OFF
-                          </span>{" "}
-                          &nbsp;&nbsp;
-                          <span
-                            style={{
-                              textDecoration: "line-through",
-                              color: "#888",
-                              fontSize: "18px",
-                            }}
-                          >
-                            ₹{item.price}
-                          </span>
-                        </h4>
+  <h4 className="text-success mb-3">
+    ₹{item.discountPrice || item.price}
+  </h4>
 
-                        <div className="d-flex justify-content-center gap-2 mb-2">
-                          {/* 
-        <span className="text-danger">
-          {Math.round(
-            ((item.price - item.discountPrice) /
-              item.price) *
-              100
-          )}
-          % OFF
-        </span> */}
-                          <span className="text-success fw-bold ms-2">
-                            ₹{item.discountPrice}
-                          </span>
-                          {/* <span className="text-primary">
-          Save ₹
-          {item.price - item.discountPrice}
-        </span> */}
-                        </div>
-                        {/* <p
-  className="mb-2 text-success fw-bold"
-  style={{
-    fontSize: "12px",
-  }}
->
-  🚚 Delivery by {getDeliveryDate(item.id)}
-</p> */}
-                        <div
-                          className="mt-2"
-                          style={{
-                            background: "#f1fff4",
-                            border: "1px solid #d4edda",
-                            borderRadius: "6px",
-                            padding: "4px",
-                            fontSize: "12px",
-                            color: "#198754",
-                            fontWeight: "600",
-                          }}
-                        >
-                          🚚 FREE Delivery by {getDeliveryDate(item.id)}
-                        </div>
-                      </>
-                    ) : (
-                      <h4 className="text-success mb-2">₹{item.price}</h4>
-                    )}
-
-                    {/* <div className="d-flex gap-2">
+  <div className="d-flex gap-2">
+    <button
+      className={`btn ${
+        wishlist.includes(item.id)
+          ? "btn-danger"
+          : "btn-outline-danger"
+      }`}
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleWishlist(item);
+      }}
+      style={{ width: "33%" }}
+    >
+      ❤️
+    </button>
 
     <button
       className="btn btn-primary"
-      style={{ width: "48%" }}
+      style={{ width: "33%" }}
       onClick={(e) => {
         e.stopPropagation();
         addToCart(item);
       }}
     >
-      Add To Cart
+      Cart
     </button>
 
     <button
       className="btn btn-success"
-      style={{ width: "48%" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        navigate(`/product/${item.id}`);
-      }}
+      style={{ width: "34%" }}
     >
-      Buy Now
+      Buy
     </button>
-
-  </div> */}
-                  </div>
+  </div>
+</div>
                   {/* BODY */}
                   {/* <div className="card-body">
                      <h6 className="fw-bold">

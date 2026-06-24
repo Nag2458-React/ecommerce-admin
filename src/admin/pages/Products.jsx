@@ -3,25 +3,59 @@ import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import AdminSidebar from "../components/AdminSidebar";
 import { toast } from "react-toastify";
+import { FaStar } from "react-icons/fa";
+import StarRating from "./StarRating";
 
 const Products = () => {
   const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    productName: "",
-    category: "",
-    sizes: [],
-    color: "",
-    material: "",
-    // quantity: "",
-    price: "",
-    discountPrice: "",
-    stock: "",
-    // occasion: "",
-    description: "",
-    imagePath: "",
-  });
+const [form, setForm] = useState({
+  productName: "",
+  category: "",
+  sizes: [],
+  colors: [],
 
+  colorName: "",
+  colorCode: "#ff0000",
+  colorImage: "",
+
+  material: "",
+  price: "",
+  discountPrice: "",
+  stock: "",
+
+  description: "",
+  imagePath: "",
+
+  rating: "4.5",
+  reviewCount: "125",
+
+  highlights: "",
+  offers: "",
+
+  returnDays: "7",
+});
+const addColor = () => {
+  if (!form.colorName || !form.colorImage) {
+    alert("Enter Color Name & Image");
+    return;
+  }
+
+  setForm({
+    ...form,
+    colors: [
+      ...form.colors,
+      {
+        name: form.colorName,
+        code: form.colorCode,
+        image: form.colorImage,
+      },
+    ],
+    colorName: "",
+    colorCode: "#ff0000",
+    colorImage: "",
+  });
+};
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -51,40 +85,67 @@ const Products = () => {
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "products"), {
-        productName: form.productName,
-        category: form.category,
-        sizes: form.sizes,
-        color: form.color,
-        material: form.material,
-        // quantity: form.quantity,
-        price: Number(form.price || 0),
-        discountPrice: Number(form.discountPrice || 0),
-        stock: Number(form.stock || 0),
-        // occasion: form.occasion,
-        description: form.description,
-        //   highlights: form.highlights,
-        //   careInstructions: form.careInstructions,
-        imagePath: form.imagePath,
-        createdAt: Timestamp.now(),
-      });
+   await addDoc(collection(db, "products"), {
+  productName: form.productName,
+  category: form.category,
+
+  sizes: form.sizes,
+  colors: form.colors,
+
+  material: form.material,
+
+  price: Number(form.price),
+  discountPrice: Number(form.discountPrice),
+
+  stock: Number(form.stock),
+
+  description: form.description,
+  imagePath: form.imagePath,
+
+  rating: Number(form.rating),
+  reviewCount: Number(form.reviewCount),
+
+  highlights: form.highlights
+    .split(",")
+    .map((item) => item.trim()),
+
+  offers: form.offers
+    .split(",")
+    .map((item) => item.trim()),
+
+  returnDays: Number(form.returnDays),
+
+  createdAt: Timestamp.now(),
+});
 
       toast.success("Data submitted successfully 🎉");
 
       setForm({
-        productName: "",
-        category: "",
-        sizes: [],
-        color: "",
-        material: "",
-        // quantity: "",
-        price: "",
-        discountPrice: "",
-        stock: "",
-        // occasion: "",
-        description: "",
-        imagePath: "",
-      });
+  productName: "",
+  category: "",
+  sizes: [],
+  colors: [],
+
+  colorName: "",
+  colorCode: "#ff0000",
+  colorImage: "",
+
+  material: "",
+  price: "",
+  discountPrice: "",
+  stock: "",
+
+  description: "",
+  imagePath: "",
+
+  rating: "4.5",
+  reviewCount: "125",
+
+  highlights: "",
+  offers: "",
+
+  returnDays: "7",
+});
     } catch (error) {
       console.error(error);
       toast.error("Failed to save product");
@@ -107,6 +168,8 @@ const Products = () => {
       });
     }
   };
+
+  
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -174,7 +237,7 @@ const Products = () => {
                   </div>
                 </div>
 
-                <div className="col-md-4">
+                {/* <div className="col-md-4">
                   <input
                     type="text"
                     name="color"
@@ -183,7 +246,7 @@ const Products = () => {
                     value={form.color}
                     onChange={handleChange}
                   />
-                </div>
+                </div> */}
 
                 <div className="col-md-4">
                   <input
@@ -235,6 +298,133 @@ const Products = () => {
                     onChange={handleChange}
                   />
                 </div>
+           <div className="col-md-4 mb-3">
+  <label className="fw-bold d-block mb-2">
+    Product Rating
+  </label>
+
+  <input
+    type="number"
+    name="rating"
+    min="0"
+    max="5"
+    step="0.1"
+    className="form-control mb-2"
+    value={form.rating}
+    onChange={handleChange}
+  />
+
+  <div className="d-flex align-items-center gap-2">
+    <StarRating
+      rating={form.rating}
+    />
+
+    <span className="badge bg-secondary">
+      {form.rating}
+    </span>
+  </div>
+</div>
+<div className="col-md-4">
+  <input
+    type="number"
+    name="reviewCount"
+    placeholder="Review Count"
+    className="form-control mb-3"
+    value={form.reviewCount}
+    onChange={handleChange}
+  />
+</div>
+<div className="col-md-6">
+  <textarea
+    name="offers"
+    rows="4"
+    className="form-control mb-3"
+    placeholder="10% Instant Discount, Free Delivery"
+    value={form.offers}
+    onChange={handleChange}
+  />
+</div>
+<div className="col-md-4">
+  <input
+    type="number"
+    name="returnDays"
+    placeholder="Return Days"
+    className="form-control mb-3"
+    value={form.returnDays}
+    onChange={handleChange}
+  />
+</div>
+<div className="col-md-4">
+  <input
+    type="text"
+    placeholder="Color Name (Red)"
+    className="form-control mb-2"
+    value={form.colorName}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        colorName: e.target.value,
+      })
+    }
+  />
+</div>
+
+<div className="col-md-4">
+  <input
+    type="color"
+    className="form-control form-control-color mb-2"
+    value={form.colorCode}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        colorCode: e.target.value,
+      })
+    }
+  />
+</div>
+
+<div className="col-md-4">
+  <input
+    type="text"
+    placeholder="/images/red.jpg"
+    className="form-control mb-2"
+    value={form.colorImage}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        colorImage: e.target.value,
+      })
+    }
+  />
+</div>
+
+<div className="col-md-4">
+  <button
+    type="button"
+    className="btn btn-success"
+    onClick={addColor}
+  >
+    Add Color
+  </button>
+</div>
+<div className="col-md-12 mb-3">
+
+  {form.colors.map((clr, index) => (
+
+    <span
+      key={index}
+      className="badge me-2"
+      style={{
+        backgroundColor: clr.code,
+        padding: "10px",
+      }}
+    >
+      {clr.name}
+    </span>
+
+  ))}
+
+</div>
                 <div className="col-md-4">
                   <textarea
                     name="description"

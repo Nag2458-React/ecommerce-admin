@@ -24,6 +24,7 @@ const ViewProducts = () => {
     price: "",
     discountPrice: "",
     stock: "",
+    rating: "",
     description: "",
     imagePath: "",
   });
@@ -41,36 +42,50 @@ const ViewProducts = () => {
     });
   };
   const updateProduct = async () => {
-    try {
-      await updateDoc(doc(db, "products", editProduct.id), {
+  try {
+    await updateDoc(
+      doc(db, "products", editProduct.id),
+      {
         productName: editProduct.productName,
-
         category: editProduct.category,
 
-        color: editProduct.color,
+        sizes: editProduct.sizes || [],
+
+        colors: editProduct.colors || [],
 
         material: editProduct.material,
 
         price: Number(editProduct.price),
 
-        discountPrice: Number(editProduct.discountPrice),
+        discountPrice: Number(
+          editProduct.discountPrice
+        ),
 
         stock: Number(editProduct.stock),
 
-        description: editProduct.description,
+        rating: Number(
+          editProduct.rating
+        ),
 
-        imagePath: editProduct.imagePath,
-      });
+        description:
+          editProduct.description,
 
-      alert("Product Updated Successfully");
+        imagePath:
+          editProduct.imagePath,
+      }
+    );
 
-      setShowModal(false);
+    alert(
+      "Product Updated Successfully"
+    );
 
-      fetchProducts();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    setShowModal(false);
+
+    fetchProducts();
+  } catch (error) {
+    console.log(error);
+  }
+};
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -137,9 +152,9 @@ const ViewProducts = () => {
                     <th>Price</th>
 
                     <th>Discount</th>
-
+                    
                     <th>Stock</th>
-
+                    <th>Rating</th>
                     <th>Description</th>
 
                     <th>Actions</th>
@@ -167,7 +182,27 @@ const ViewProducts = () => {
 
                       <td>{item.sizes?.join(", ")}</td>
 
-                      <td>{item.color}</td>
+                      <td>
+  <div className="d-flex gap-1">
+    {item.colors?.map(
+      (clr, index) => (
+        <div
+          key={index}
+          title={clr.name}
+          style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            background:
+              clr.code,
+            border:
+              "1px solid #ccc",
+          }}
+        />
+      )
+    )}
+  </div>
+</td>
 
                       <td>{item.material}</td>
 
@@ -201,7 +236,17 @@ const ViewProducts = () => {
                           {item.stock}
                         </span>
                       </td>
-
+                      
+                          <td>
+  <span
+    className="badge bg-warning text-dark"
+    style={{
+      fontSize: "14px",
+    }}
+  >
+    ⭐ {item.rating || 4.5}
+  </span>
+</td>
                       <td
                         style={{
                           maxWidth: "200px",
@@ -292,7 +337,7 @@ Delete
                               onChange={handleChange}
                             />
                           </div>
-                          <div className="col-md-6">
+                          {/* <div className="col-md-6">
                             <input
                               type="text"
                               name="color"
@@ -301,7 +346,7 @@ Delete
                               value={editProduct.color}
                               onChange={handleChange}
                             />
-                          </div>
+                          </div> */}
                           <div className="col-md-6">
                             <input
                               type="text"
@@ -342,6 +387,21 @@ Delete
                               onChange={handleChange}
                             />
                           </div>
+                          <div className="col-md-6">
+  <input
+    type="number"
+    step="0.1"
+    min="1"
+    max="5"
+    name="rating"
+    className="form-control mb-2"
+    placeholder="Rating"
+    value={
+      editProduct.rating || ""
+    }
+    onChange={handleChange}
+  />
+</div>
                           <div className="col-md-12">
                             <input
                               type="text"
@@ -352,6 +412,33 @@ Delete
                               onChange={handleChange}
                             />
                           </div>
+                          <div className="col-md-12">
+  <label className="fw-bold mb-1">
+    Colors JSON
+  </label>
+
+  <textarea
+    className="form-control mb-2"
+    rows="5"
+    value={JSON.stringify(
+      editProduct.colors || [],
+      null,
+      2
+    )}
+    onChange={(e) => {
+      try {
+        setEditProduct({
+          ...editProduct,
+          colors: JSON.parse(
+            e.target.value
+          ),
+        });
+      } catch {
+        // invalid json ignore
+      }
+    }}
+  />
+</div>
                           <div className="col-md-12">
                             <textarea
                               name="description"

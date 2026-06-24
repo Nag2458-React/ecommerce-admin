@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import {
   FaHeart,
   FaHome,
@@ -7,6 +8,7 @@ import {
   FaUser,
 } from "react-icons/fa";
 import Navbar from "./Navbar";
+import StarRating from "../admin/pages/StarRating";
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ useEffect(() => {
 
 }, []);
   const [wishlist, setWishlist] = useState([]);
-
+const [selectedColors, setSelectedColors] =  useState({});
   useEffect(() => {
   const user =
   localStorage.getItem(
@@ -40,39 +42,76 @@ const data =
   ) || [];
 
 setWishlist(data);
+
+const colorsObj = {};
+
+data.forEach((item) => {
+  if (item.selectedColor) {
+    colorsObj[item.id] =
+      item.selectedColor;
+  }
+});
+
+setSelectedColors(colorsObj);
   }, []);
 const addToCart = (product) => {
 
   const user =
-localStorage.getItem(
-  "currentUser"
-);
+    localStorage.getItem(
+      "currentUser"
+    );
 
-let cart =
-JSON.parse(
-  localStorage.getItem(
-    `cart_${user}`
-  )
-) || [];
+  let cart =
+    JSON.parse(
+      localStorage.getItem(
+        `cart_${user}`
+      )
+    ) || [];
+
+  const currentColor =
+    selectedColors[product.id];
+
+  const productToCart = {
+    ...product,
+
+    imagePath:
+      currentColor?.image ||
+      product.imagePath,
+
+    selectedColor:
+      currentColor || null,
+
+    qty: 1,
+  };
 
   const exists = cart.find(
     (item) =>
-      item.id === product.id
+      item.id === product.id &&
+      item.selectedSize ===
+        product.selectedSize
   );
 
   if (exists) {
+
     exists.qty += 1;
+
+    exists.imagePath =
+      currentColor?.image ||
+      exists.imagePath;
+
+    exists.selectedColor =
+      currentColor || null;
+
   } else {
-    cart.push({
-      ...product,
-      qty: 1,
-    });
+
+    cart.push(productToCart);
+
   }
 
- localStorage.setItem(
-  `cart_${user}`,
-  JSON.stringify(cart)
-);
+  localStorage.setItem(
+    `cart_${user}`,
+    JSON.stringify(cart)
+  );
 
   navigate("/cart");
 };
@@ -92,6 +131,11 @@ localStorage.setItem(
   `wishlist_${user}`,
   JSON.stringify(updated)
 );
+window.dispatchEvent(
+  new Event(
+    "cartUpdated"
+  )
+);
   };
 
 const handleLogout = () => {
@@ -107,6 +151,26 @@ const handleLogout = () => {
   navigate("/login");
 };
 
+
+const getDeliveryDate = () => {
+  const today = new Date();
+
+  const randomDays =
+    Math.floor(Math.random() * 5) + 3;
+
+  today.setDate(
+    today.getDate() + randomDays
+  );
+
+  return today.toLocaleDateString(
+    "en-IN",
+    {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    }
+  );
+};
   return (
     <div>
 <Navbar />
@@ -164,7 +228,7 @@ const handleLogout = () => {
       {/* PAGE CONTENT */}
       <div className="container mt-4 wishlist">
 
-        <h2 className="mb-4 text-center text-white">
+        <h2 className="mb-4 text-center text-black">
           ❤️ My Wishlist
         </h2>
 
@@ -188,120 +252,228 @@ const handleLogout = () => {
               className="col-lg-3 col-md-4 col-sm-6 mb-4"
               key={item.id}
             >
-              <div className="card h-100 shadow">
+             <div
+  className="card  shadow"
+  style={{
+    cursor: "pointer",
+    borderRadius: "15px",
+    overflow: "hidden",
+  }}
+  onClick={() =>
+  navigate(`/product/${item.id}`, {
+    state: {
+      selectedColor:
+        selectedColors[item.id],
+    },
+  })
+}
+>
+<img
+  key={selectedColors[item.id]?.image}
+  src={
+    selectedColors[item.id]?.image ||
+    item.selectedColor?.image ||
+    item.imagePath
+  }
+  alt={item.productName}
+  style={{
+    height: "150px",
+    width: "100%",
+    objectFit: "cover",
+  }}
+  onError={(e) => {
+    e.target.src = "/images/no-image.png";
+  }}
+/>
 
-                <img
-                  src={item.imagePath}
-                  alt={item.productName}
-                  style={{
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                  onError={(e) => {
-                    e.target.src =
-                      "/images/no-image.png";
-                  }}
-                />
+             <div className="card-body text-center">
 
-              <div className="card-body">
-
-  <h5 className="fw-bold">
+  <h5 className="fw-bold mb-2">
     {item.productName}
   </h5>
 
-  <span className="badge bg-primary mb-2">
-    {item.category}
+
+{/* Sizes */}
+{item.selectedSize && (
+  <div className="mb-2">
+    <span
+      className=" text-primary"
+      style={{
+        fontSize: "13px",
+        padding: "6px 10px",
+      }}
+    >
+      Selected Size: {item.selectedSize}
+    </span>
+  </div>
+)}
+{item.colors?.length > 0 && (
+  <div
+    className="mb-3"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <select
+      className="form-select form-select-sm"
+      value={
+        selectedColors[item.id]?.name || ""
+      }
+      onChange={(e) => {
+        const colorObj =
+          item.colors.find(
+            (c) =>
+              c.name === e.target.value
+          );
+
+        setSelectedColors({
+          ...selectedColors,
+          [item.id]: colorObj,
+        });
+      }}
+    >
+      {item.colors.map((color) => (
+        <option
+          key={color.name}
+          value={color.name}
+        >
+          {color.name}
+        </option>
+      ))}
+    </select>
+
+    <div className="mt-2 d-flex justify-content-center align-items-center gap-2">
+      <span
+        style={{
+          width: "18px",
+          height: "18px",
+          borderRadius: "50%",
+          background:
+            selectedColors[item.id]
+              ?.code || "#ccc",
+          border: "1px solid #000",
+          display: "inline-block",
+        }}
+      ></span>
+
+      <small className="fw-bold">
+        {
+          selectedColors[item.id]
+            ?.name
+        }
+      </small>
+    </div>
+  </div>
+)}
+{/* Description */}
+{item.description && (
+  <p
+    className="text-muted mb-2"
+    style={{
+      fontSize: "13px",
+      display: "-webkit-box",
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: "vertical",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    }}
+  >
+    {item.description}
+  </p>
+)}
+<div
+  className="d-flex justify-content-center align-items-center gap-2 mb-2"
+>
+  <StarRating
+    rating={item.rating || 4.5}
+  />
+
+  <span
+    className="badge bg-secondary"
+  >
+    {item.rating || 4.5}
   </span>
-
-  
-
-  <p>
-    <strong>Size:</strong>{" "}
-    {item.selectedSize || "Not Selected"}
-  </p>
-
-  <p>
-    <strong>Color:</strong>{" "}
-    {item.color || "-"}
-  </p>
-
-  <p>
-    <strong>Material:</strong>{" "}
-    {item.material || "-"}
-  </p>
-
-  <p>
-    <strong>Stock:</strong>{" "}
-    {item.stock || 0}
-  </p>
-
-  <p>
-    <strong>Description:</strong>
-    <br />
-    {item.description || "-"}
-  </p>
-
- 
-
-  {item.discountPrice > 0 ? (
+</div>
+  {item.discountPrice ? (
     <>
-      <div>
+      <h4 className="mb-1">
+
         <span
           style={{
             textDecoration: "line-through",
-            color: "gray",
+            color: "#888",
+            fontSize: "18px",
           }}
         >
           ₹{item.price}
         </span>
-      </div>
 
+        <span
+          className="text-success fw-bold ms-2"
+        >
+          ₹{item.discountPrice}
+        </span>
+
+      </h4>
+
+      <div className="d-flex justify-content-center gap-2 mb-2">
+
+        <span className=" text-danger">
+          {Math.round(
+            ((item.price -
+              item.discountPrice) /
+              item.price) *
+              100
+          )}
+          % OFF
+        </span>
+
+        <span className="text-success">
+          Save ₹
+          {item.price -
+            item.discountPrice}
+        </span>
+
+      </div>
       <div
-        className="fw-bold text-success"
-        style={{ fontSize: "22px" }}
-      >
-        ₹{item.discountPrice}
-      </div>
-
-      <div className="text-success">
-        You Save ₹
-        {item.price - item.discountPrice}
-      </div>
-
-      <span className="badge bg-danger">
-        {Math.round(
-          ((item.price - item.discountPrice) /
-            item.price) *
-            100
-        )}
-        % OFF
-      </span>
+  className="mt-2"
+  style={{
+    fontSize: "13px",
+    color: "green",
+    fontWeight: "600",
+  }}
+>
+  🚚 Delivery by {getDeliveryDate()}
+</div>
     </>
   ) : (
-    <div
-      className="fw-bold text-success"
-      style={{ fontSize: "22px" }}
-    >
+    <h4 className="text-success">
       ₹{item.price}
-    </div>
+    </h4>
   )}
 
-  <div
-    className="d-grid gap-2 mt-3"
-  >
+  <div className="d-flex gap-2 mt-3">
+
     <button
-      className="btn btn-success"
-      onClick={() => addToCart(item)}
+      className="btn btn-primary"
+      style={{ width: "50%" }}
+      onClick={(e) => {
+        e.stopPropagation();
+        addToCart(item);
+      }}
     >
       Add To Cart
     </button>
 
     <button
       className="btn btn-danger"
-      onClick={() => removeItem(item.id)}
+      style={{ width: "50%" }}
+      onClick={(e) => {
+        e.stopPropagation();
+        removeItem(item.id);
+      }}
     >
-      Remove Wishlist
+      Remove
     </button>
+
   </div>
 
 </div>

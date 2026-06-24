@@ -140,7 +140,7 @@ window.dispatchEvent(
 
       <div className="d-flex justify-content-between mb-4">
 
-        <h2 className="text-white">
+        <h2 className="text-black">
           Shopping Cart
         </h2>
 
@@ -175,22 +175,27 @@ window.dispatchEvent(
 
                 <div className="row g-0">
 
-                 
+                 <div style={{height:'200px'}}>
 
-                    <img
-                      src={item.imagePath}
-                      alt={
-                        item.productName
-                      }
-                      className="img-fluid pr"
-                      style={{
-                       
-                        objectFit:
-                          "cover",
-                      }}
-                    />
+           <img
+   src={
+    item.selectedColor?.image ||
+    item.imagePath
+  }
+  alt={item.productName}
+  className="img-fluid pr"
+  style={{
+    objectFit: "cover",
+    height: "100%",
+    width: "100%",
+  }}
+  onError={(e) => {
+    e.target.src =
+      "/images/no-image.png";
+  }}
+/>
 
-                 
+                 </div>
 
                  
 
@@ -212,12 +217,56 @@ window.dispatchEvent(
     {item.selectedSize}
   </p>
 
-  <p>
-    <strong>Color :</strong>
-    {" "}
-    {item.color}
-  </p>
+ <p>
+  <strong>Color :</strong>{" "}
+  {item.selectedColor?.name ||
+    "Default"}
+</p>
+{item.colors?.length > 0 && (
+  <div className="d-flex gap-2 mb-2">
+    {item.colors.map(
+      (color, index) => (
+        <div
+          key={index}
+          title={color.name}
+          style={{
+            width: "25px",
+            height: "25px",
+            borderRadius: "50%",
+            background:
+              color.code,
+            border:
+              item.selectedColor
+                ?.name ===
+              color.name
+                ? "3px solid black"
+                : "1px solid #ccc",
+            cursor: "pointer",
+          }}
+    onClick={() => {
+  const updated = cart.map((p) =>
+    p.id === item.id &&
+    p.selectedSize === item.selectedSize
+      ? {
+          ...p,
+          selectedColor: color,
+          imagePath: color.image,
+        }
+      : p
+  );
 
+  setCart(updated);
+
+  localStorage.setItem(
+    `cart_${user}`,
+    JSON.stringify(updated)
+  );
+}}
+        />
+      )
+    )}
+  </div>
+)}
   <p>
     <strong>Material :</strong>
     {" "}

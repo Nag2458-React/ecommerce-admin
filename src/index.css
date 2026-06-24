@@ -57,7 +57,7 @@
 }
 
 body{
-  background:#053c3f !important;
+  background:#fff !important;
   font-family:Arial, sans-serif;
   overflow-x:hidden;
 }
@@ -159,7 +159,9 @@ label {
     font-size: 14px;
 }
 .products select {
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 500 !important;
+    color: #818181;
 }
 hr {
     margin: 0rem 0 !important;
@@ -260,4 +262,34 @@ td.action-buttons svg:last-child {
 }
 .navbar .nav-link{
   color: #fff;
+}
+.products .card {
+    cursor: pointer;
+}
+
+.products .btn-danger {
+    --bs-btn-color: #fff !important;
+    --bs-btn-bg: #ffffff !important;
+    --bs-btn-border-color: #ffffff !important;
+    --bs-btn-hover-color: #fff !important;
+}
+.pd-card{
+  text-align: left;
+}
+.pd-card h5 {
+    background: #eff5ff;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 17px !important;
+    text-align: center;
+}
+.sp h5 {
+    background: #eff5ff;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 17px !important;
+    text-align: center;
+}
+.card.p-3.mb-3.sp tr td:first-child {
+    background: #f9f9f9;
 }

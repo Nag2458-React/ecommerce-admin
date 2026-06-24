@@ -38,9 +38,9 @@ const Navbar = () => {
     );
 
   const [cartCount,
-    setCartCount] =
-    useState(0);
-
+    setCartCount] =    useState(0);
+const [wishlistCount,
+  setWishlistCount] =  useState(0);
   useEffect(() => {
 
     const loadCart = () => {
@@ -68,6 +68,17 @@ const Navbar = () => {
       setCartCount(
         totalQty
       );
+      // Wishlist Count
+  const wishlist =
+    JSON.parse(
+      localStorage.getItem(
+        `wishlist_${user}`
+      )
+    ) || [];
+
+  setWishlistCount(
+    wishlist.length
+  );
     };
 
     loadCart();
@@ -150,15 +161,64 @@ const Navbar = () => {
               </Link>
             </li>
 
-            <li className="nav-item">
-              <Link
-                to="/wishlist"
-                className="nav-link"
-              >
-                <FaHeart className="me-1" />
-                Wishlist
-              </Link>
-            </li>
+           <li className="nav-item">
+
+  <Link
+    to="/wishlist"
+    className="nav-link position-relative"
+  >
+
+   
+
+    Wishlist 
+ <span
+      style={{
+        position: "relative",
+        display: "inline-block",
+        marginLeft: "4px",
+      }}
+    >
+
+      <FaHeart
+        style={{
+          fontSize: "22px",
+          color:
+            wishlistCount > 0
+              ? "#ff1744"
+              : "white",
+        }}
+      />
+
+      {wishlistCount > 0 && (
+
+        <span
+          style={{
+            position: "absolute",
+            top: "-8px",
+            right: "-10px",
+            background: "#fff",
+            color: "#ff1744",
+            borderRadius: "50%",
+            fontSize: "10px",
+            fontWeight: "bold",
+            minWidth: "18px",
+            height: "18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border:
+              "2px solid #ff1744",
+          }}
+        >
+          {wishlistCount}
+        </span>
+
+      )}
+
+    </span>
+  </Link>
+
+</li>
 
             <li className="nav-item">
 

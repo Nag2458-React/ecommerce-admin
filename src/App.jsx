@@ -23,6 +23,8 @@ import MyOrders from "./pages/MyOrders";
 import Cruds from "./Cruds";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
+import ProductDetails from "./pages/ProductDetails";
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -38,6 +40,10 @@ const App = () => {
         <Route  path="/categories"  element={<Categories />}/>
         <Route  path="/cruds"  element={<Cruds />}/>
         <Route  path="/orders"  element={<Orders />}/>
+        <Route
+  path="/product/:id"
+  element={<ProductDetails />}
+/>
         <Route
   path="/profile"
   element={<Profile />}
