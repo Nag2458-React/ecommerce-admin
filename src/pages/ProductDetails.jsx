@@ -158,11 +158,11 @@ window.dispatchEvent(
   alert("Added To Cart");
 };
 
-  const buyNow = () => {
-    addToCart();
+  // const buyNow = () => {
+  //   addToCart();
 
-    navigate("/cart");
-  };
+  //   navigate("/cart");
+  // };
 
   const getDeliveryDate = () => {
 
@@ -488,9 +488,9 @@ window.dispatchEvent(
                 🛒 Add To Cart
               </button>
 
-              <button className="btn btn-success" onClick={buyNow}>
+              {/* <button className="btn btn-success" onClick={buyNow}>
                 ⚡ Buy Now
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

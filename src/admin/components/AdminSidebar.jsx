@@ -7,6 +7,7 @@ import {
   FaUsers,
   FaSignOutAlt,
   FaTags,
+  FaServer,
   FaExclamationTriangle,
   FaChartBar,
   FaCog,
@@ -67,6 +68,19 @@ const AdminSidebar = () => {
               <span className="ms-2">View Products</span>
             </Link>
           </li>
+          <li className="nav-item mb-2">
+            <Link to="/admin/top-selling-products" className="nav-link text-white">
+              <FaBoxOpen />
+              <span className="ms-2">Top Selling Products</span>
+            </Link>
+          </li>
+       <li className="nav-item mb-2">
+            <Link to="/admin/recent-products" className="nav-link text-white">
+              <FaBoxOpen />
+              <span className="ms-2">Recent Products</span>
+            </Link>
+          </li>
+       
 <li className="nav-item mb-2">
             <Link to="/cruds" className="nav-link text-white">
               <FaCog />
@@ -94,9 +108,9 @@ const AdminSidebar = () => {
           {/* Orders */}
 
           <li className="nav-item mb-2">
-            <Link to="/orders" className="nav-link text-white">
+            <Link to="/admin/orders" className="nav-link text-white">
               <FaShoppingCart />
-              <span className="ms-2">Orders</span>
+              <span className="ms-2">Placed Orders</span>
             </Link>
           </li>
 
@@ -118,6 +132,12 @@ const AdminSidebar = () => {
             </Link>
           </li>
 
+          <li className="nav-item mb-2">
+            <Link to="/admin/system-status" className="nav-link text-white">
+              <FaChartBar />
+              <span className="ms-2"> System Status</span>
+            </Link>
+          </li>
           {/* Settings */}
 
           <li className="nav-item mb-2">

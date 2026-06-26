@@ -22,9 +22,13 @@ import SessionManager from "./SessionManager";
 import MyOrders from "./pages/MyOrders";
 import Cruds from "./Cruds";
 import Profile from "./pages/Profile";
-import Orders from "./pages/Orders";
+import Orders from "./pages/Orders-rozor-bkp";
 import ProductDetails from "./pages/ProductDetails";
-
+import AdminOrders from "./admin/pages/AdminOrders";
+import TopSellingProducts from "./admin/pages/TopSellingProducts";
+import RecentProducts from "./admin/pages/RecentProducts";
+import Footer from "./pages/Footer";
+import SystemStatus from "./admin/pages/SystemStatus";
 const App = () => {
   return (
     <BrowserRouter>
@@ -40,46 +44,25 @@ const App = () => {
         <Route  path="/categories"  element={<Categories />}/>
         <Route  path="/cruds"  element={<Cruds />}/>
         <Route  path="/orders"  element={<Orders />}/>
-        <Route
-  path="/product/:id"
-  element={<ProductDetails />}
-/>
-        <Route
-  path="/profile"
-  element={<Profile />}
-/>
-        <Route
-  path="/myorders"
-  element={<MyOrders />}
-/>
-        <Route
-  path="/reports"
-  element={<Reports />}
-/>
-<Route
-  path="/settings"
-  element={<Settings />}
-/>
-        <Route
-  path="/low-stock"
-  element={<LowStock />}
-/>
-        <Route
-  path="/wishlist"
-  element={<UserProtectedRoute><Wishlist /></UserProtectedRoute>}
-/>
-<Route
-  path="/customers"
-  element={<Customers />}
-/>
+        <Route  path="/product/:id"  element={<ProductDetails />}/>
+        <Route  path="/profile"  element={<Profile />}/>
+        <Route  path="/myorders"  element={<MyOrders />}/>
+        <Route  path="/reports"  element={<Reports />}/>
+<Route  path="/settings"  element={<Settings />}/>
+        <Route  path="/low-stock"  element={<LowStock />}/>
+        <Route  path="/wishlist"  element={<UserProtectedRoute><Wishlist /></UserProtectedRoute>}/>
+<Route  path="/customers"  element={<Customers />}/>
+<Route path="/admin/orders" element={<AdminOrders />} />
+<Route  path="/admin/system-status"  element={<SystemStatus />}/>
+<Route  path="/admin/top-selling-products"  element={<TopSellingProducts />}/>
+  <Route  path="/admin/recent-products"  element={<RecentProducts />}/>
       </Routes>
-
       <ToastContainer
         position="top-right"
         autoClose={3000}
         theme="light"
       />
-
+<Footer />
     </BrowserRouter>
   );
 };

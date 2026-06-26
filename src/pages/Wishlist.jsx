@@ -238,9 +238,9 @@ const getDeliveryDate = () => {
 
             <Link
               to="/"
-              className="btn btn-primary mt-3"
+              className="btn btn-cont"
             >
-              Continue Shopping
+             <FaHome className="me-1" />  Continue Shopping
             </Link>
           </div>
         )}

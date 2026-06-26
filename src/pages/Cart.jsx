@@ -1,103 +1,61 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
-
-import { Link,useNavigate  } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { FaHome } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
 const Cart = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [cart, setCart] = useState([]);
-const user =
-  localStorage.getItem(
-    "currentUser"
-  );
+  const user = localStorage.getItem("currentUser");
   useEffect(() => {
-   const user =
-  localStorage.getItem(
-    "currentUser"
-  );
+    const user = localStorage.getItem("currentUser");
 
-const data =
-  JSON.parse(
-    localStorage.getItem(
-      `cart_${user}`
-    )
-  ) || [];
+    const data = JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
 
-setCart(data);
+    setCart(data);
   }, []);
 
   const saveCart = (updated) => {
     setCart(updated);
 
-  const user =
-  localStorage.getItem(
-    "currentUser"
-  );
+    const user = localStorage.getItem("currentUser");
 
-localStorage.setItem(
-  `cart_${user}`,
-  JSON.stringify(updated)
-);
+    localStorage.setItem(`cart_${user}`, JSON.stringify(updated));
   };
 
-const updateQty = (id, size, type) => {
+  const updateQty = (id, size, type) => {
+    const updated = cart.map((item) => {
+      if (item.id === id && item.selectedSize === size) {
+        if (type === "plus") {
+          if (item.qty >= item.stock) {
+            alert(`${item.productName} Out Of Stock`);
 
-  const updated = cart.map((item) => {
+            return item;
+          }
 
-    if (
-      item.id === id &&
-      item.selectedSize === size
-    ) {
-
-      if (type === "plus") {
-
-        if (item.qty >= item.stock) {
-
-          alert(
-            `${item.productName} Out Of Stock`
-          );
-
-          return item;
+          return {
+            ...item,
+            qty: item.qty + 1,
+          };
         }
 
-        return {
-          ...item,
-          qty: item.qty + 1,
-        };
+        if (type === "minus" && item.qty > 1) {
+          return {
+            ...item,
+            qty: item.qty - 1,
+          };
+        }
       }
 
-      if (
-        type === "minus" &&
-        item.qty > 1
-      ) {
-        return {
-          ...item,
-          qty: item.qty - 1,
-        };
-      }
-    }
+      return item;
+    });
 
-    return item;
-  });
+    saveCart(updated);
+  };
 
-  saveCart(updated);
-};
-
-
-  const removeItem = (
-    id,
-    size
-  ) => {
-
+  const removeItem = (id, size) => {
     const updated = cart.filter(
-      (item) =>
-        !(
-          item.id === id &&
-          item.selectedSize === size
-        )
+      (item) => !(item.id === id && item.selectedSize === size),
     );
 
     saveCart(updated);
@@ -106,182 +64,124 @@ const updateQty = (id, size, type) => {
   const total = cart.reduce(
     (sum, item) =>
       sum +
-      Number(
-        item.discountPrice ||
-        item.price ||
-        0
-      ) *
-        Number(item.qty || 1),
-    0
+      Number(item.discountPrice || item.price || 0) * Number(item.qty || 1),
+    0,
   );
-const originalTotal = cart.reduce(
-  (sum, item) =>
-    sum +
-    Number(item.price || 0) *
-      Number(item.qty || 1),
-  0
-);
+  const originalTotal = cart.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1),
+    0,
+  );
 
-const totalSavings =
-  originalTotal - total;
+  const totalSavings = originalTotal - total;
 
-const totalItems = cart.reduce(
-  (sum, item) =>
-    sum + Number(item.qty || 1),
-  0
-);
-window.dispatchEvent(
-  new Event("cartUpdated")
-);
+  const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
+  window.dispatchEvent(new Event("cartUpdated"));
   return (
     <>
-    <Navbar />
-    <div className="container mt-4 cart">
+      <Navbar />
+      <div className="container mt-4 cart">
+        <div className="d-flex justify-content-between mb-4">
+          <h2 className="text-black">Shopping Cart</h2>
 
-      <div className="d-flex justify-content-between mb-4">
+          <Link to="/" className="btn btn-cont">
+            <FaHome className="me-1" /> Continue Shopping
+          </Link>
+        </div>
 
-        <h2 className="text-black">
-          Shopping Cart
-        </h2>
+        {cart.length === 0 ? (
+          <h4 className="text-white">No Products In Cart</h4>
+        ) : (
+          <div className="row">
+            <div className="col-md-8">
+              <div className="row">
+                {cart.map((item) => (
+                  <div className="col-md-4">
+                    <div
+                      className="card mb-3"
+                      key={item.id + item.selectedSize}
+                    >
+                      <div className="row g-0">
+                        <div style={{ height: "200px" }}>
+                          <img
+                            src={item.selectedColor?.image || item.imagePath}
+                            alt={item.productName}
+                            className="img-fluid pr"
+                            style={{
+                              objectFit: "cover",
+                              height: "100%",
+                              width: "100%",
+                            }}
+                            onError={(e) => {
+                              e.target.src = "/images/no-image.png";
+                            }}
+                          />
+                        </div>
 
-        <Link
-          to="/"
-          className="btn btn-primary"
-        >
-          Continue Shopping
-        </Link>
+                        <div className="card-body">
+                          <h5 className="fw-bold">{item.productName}</h5>
 
-      </div>
+                          <span className="badge bg-primary">
+                            {item.category}
+                          </span>
 
-      {cart.length === 0 ? (
-        <h4 className="text-white">
-          No Products In Cart
-        </h4>
-      ) : (
-        <div className="row">
+                          <p>
+                            <strong>Size :</strong> {item.selectedSize}
+                          </p>
 
-          <div className="col-md-8">
-        <div className="row">
-         
-            {cart.map((item) => (
- <div className="col-md-4">
-              <div
-                className="card mb-3"
-                key={
-                  item.id +
-                  item.selectedSize
-                }
-              >
+                          <p>
+                            <strong>Color :</strong>{" "}
+                            {item.selectedColor?.name || "Default"}
+                          </p>
+                          {item.colors?.length > 0 && (
+                            <div className="d-flex gap-2 mb-2">
+                              {item.colors.map((color, index) => (
+                                <div
+                                  key={index}
+                                  title={color.name}
+                                  style={{
+                                    width: "25px",
+                                    height: "25px",
+                                    borderRadius: "50%",
+                                    background: color.code,
+                                    border:
+                                      item.selectedColor?.name === color.name
+                                        ? "3px solid black"
+                                        : "1px solid #ccc",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {
+                                    const updated = cart.map((p) =>
+                                      p.id === item.id &&
+                                      p.selectedSize === item.selectedSize
+                                        ? {
+                                            ...p,
+                                            selectedColor: color,
+                                            imagePath: color.image,
+                                          }
+                                        : p,
+                                    );
 
-                <div className="row g-0">
+                                    setCart(updated);
 
-                 <div style={{height:'200px'}}>
+                                    localStorage.setItem(
+                                      `cart_${user}`,
+                                      JSON.stringify(updated),
+                                    );
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          <p>
+                            <strong>Material :</strong> {item.material}
+                          </p>
 
-           <img
-   src={
-    item.selectedColor?.image ||
-    item.imagePath
-  }
-  alt={item.productName}
-  className="img-fluid pr"
-  style={{
-    objectFit: "cover",
-    height: "100%",
-    width: "100%",
-  }}
-  onError={(e) => {
-    e.target.src =
-      "/images/no-image.png";
-  }}
-/>
-
-                 </div>
-
-                 
-
-                 <div className="card-body">
-
-  <h5 className="fw-bold">
-    {item.productName}
-  </h5>
-
-  <span className="badge bg-primary">
-    {item.category}
-  </span>
-
- 
-
-  <p>
-    <strong>Size :</strong>
-    {" "}
-    {item.selectedSize}
-  </p>
-
- <p>
-  <strong>Color :</strong>{" "}
-  {item.selectedColor?.name ||
-    "Default"}
-</p>
-{item.colors?.length > 0 && (
-  <div className="d-flex gap-2 mb-2">
-    {item.colors.map(
-      (color, index) => (
-        <div
-          key={index}
-          title={color.name}
-          style={{
-            width: "25px",
-            height: "25px",
-            borderRadius: "50%",
-            background:
-              color.code,
-            border:
-              item.selectedColor
-                ?.name ===
-              color.name
-                ? "3px solid black"
-                : "1px solid #ccc",
-            cursor: "pointer",
-          }}
-    onClick={() => {
-  const updated = cart.map((p) =>
-    p.id === item.id &&
-    p.selectedSize === item.selectedSize
-      ? {
-          ...p,
-          selectedColor: color,
-          imagePath: color.image,
-        }
-      : p
-  );
-
-  setCart(updated);
-
-  localStorage.setItem(
-    `cart_${user}`,
-    JSON.stringify(updated)
-  );
-}}
-        />
-      )
-    )}
-  </div>
-)}
-  <p>
-    <strong>Material :</strong>
-    {" "}
-    {item.material}
-  </p>
-
-  <p>
-    <strong>Stock :</strong>
-    {" "}
-    {item.stock}
-  </p>
-{
-  item.qty >= item.stock && (
-    <div
-      className="
+                          <p>
+                            <strong>Stock :</strong> {item.stock}
+                          </p>
+                          {item.qty >= item.stock && (
+                            <div
+                              className="
       alert
       alert-danger
       text-center
@@ -289,248 +189,194 @@ window.dispatchEvent(
       mb-2
       p-2
       "
-    >
-      Out Of Stock
-    </div>
-  )
-}
-  <div className="mb-2">
+                            >
+                              Out Of Stock
+                            </div>
+                          )}
+                          <div className="mb-2">
+                            {item.discountPrice > 0 ? (
+                              <>
+                                <span
+                                  style={{
+                                    textDecoration: "line-through",
+                                    color: "gray",
+                                  }}
+                                >
+                                  ₹{item.price}
+                                </span>
 
-    {item.discountPrice > 0 ? (
-      <>
-        <span
-          style={{
-            textDecoration:
-              "line-through",
-            color: "gray",
-          }}
-        >
-          ₹{item.price}
-        </span>
+                                <br />
 
-        <br />
-
-        <span
-          className="
+                                <span
+                                  className="
             text-success
             fw-bold
           "
-          style={{
-            fontSize: "22px",
-          }}
-        >
-          ₹{item.discountPrice}
-        </span>
+                                  style={{
+                                    fontSize: "22px",
+                                  }}
+                                >
+                                  ₹{item.discountPrice}
+                                </span>
 
-        <br />
+                                <br />
 
-        <small
-          className="
+                                <small
+                                  className="
             text-success
             fw-bold
           "
-        >
-          Save ₹
-          {item.price -
-            item.discountPrice}
-        </small>
+                                >
+                                  Save ₹{item.price - item.discountPrice}
+                                </small>
 
-        <span
-          className="
+                                <span
+                                  className="
             badge
             bg-danger
             
           "
-        >
-          {Math.round(
-            ((item.price -
-              item.discountPrice) /
-              item.price) *
-              100
-          )}
-          % OFF
-        </span>
-      </>
-    ) : (
-      <span
-        className="
+                                >
+                                  {Math.round(
+                                    ((item.price - item.discountPrice) /
+                                      item.price) *
+                                      100,
+                                  )}
+                                  % OFF
+                                </span>
+                              </>
+                            ) : (
+                              <span
+                                className="
           text-success
           fw-bold
         "
-      >
-        ₹{item.price}
-      </span>
-    )}
+                              >
+                                ₹{item.price}
+                              </span>
+                            )}
+                          </div>
 
-  </div>
-
-  <div
-    className="
+                          <div
+                            className="
       d-flex
       align-items-center
       mb-3
-    "style={{paddingLeft: "30px"}}
-  >
+    "
+                            style={{ paddingLeft: "30px" }}
+                          >
+                            <button
+                              className="btn btn-danger"
+                              onClick={() =>
+                                updateQty(item.id, item.selectedSize, "minus")
+                              }
+                            >
+                              -
+                            </button>
 
-    <button
-      className="btn btn-danger"
-      onClick={() =>
-        updateQty(
-          item.id,
-          item.selectedSize,
-          "minus"
-        )
-      }
-    >
-      -
-    </button>
-
-    <span
-      className="
+                            <span
+                              className="
         mx-3
         fw-bold
       "
-    >
-      {item.qty}
-    </span>
+                            >
+                              {item.qty}
+                            </span>
 
-  <button
-  className="btn btn-success"
-  disabled={
-    item.qty >= item.stock
-  }
-  onClick={() =>
-    updateQty(
-      item.id,
-      item.selectedSize,
-      "plus"
-    )
-  }
->
-  +
-</button>
+                            <button
+                              className="btn btn-success"
+                              disabled={item.qty >= item.stock}
+                              onClick={() =>
+                                updateQty(item.id, item.selectedSize, "plus")
+                              }
+                            >
+                              +
+                            </button>
+                          </div>
 
-  </div>
-
-  <div
-    className="
+                          <div
+                            className="
       alert
       alert-success
       
     "
-  >
-    Sub Total :
-    ₹
-    {(
-      Number(
-        item.discountPrice ||
-          item.price
-      ) *
-      Number(item.qty)
-    )}
-  </div>
+                          >
+                            Sub Total : ₹
+                            {Number(item.discountPrice || item.price) *
+                              Number(item.qty)}
+                          </div>
 
-  <button
-    className="
+                          <button
+                            className="
       btn
       btn-outline-danger
       w-100
     "
-    onClick={() =>
-      removeItem(
-        item.id,
-        item.selectedSize
-      )
-    }
-  >
-    Remove
-  </button>
-
-</div>
-
-                 
-
-                </div>
-
+                            onClick={() =>
+                              removeItem(item.id, item.selectedSize)
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-</div>
-            ))}
             </div>
 
-          </div>
+            <div className="col-md-4">
+              <div className="card shadow">
+                <div className="card-body">
+                  <h3>Order Summary</h3>
 
-          <div className="col-md-4">
+                  <hr />
 
-          <div className="card shadow">
+                  <p>
+                    Total Items :<strong> {totalItems}</strong>
+                  </p>
 
-  <div className="card-body">
+                  <p>
+                    Original Price :<strong>₹{originalTotal}</strong>
+                  </p>
 
-    <h3>
-      Order Summary
-    </h3>
-
-    <hr />
-
-    <p>
-      Total Items :
-      <strong>
-        {" "}
-        {totalItems}
-      </strong>
-    </p>
-
-    <p>
-      Original Price :
-      <strong>
-        ₹{originalTotal}
-      </strong>
-    </p>
-
-    <p
-      className="
+                  <p
+                    className="
         text-success
         fw-bold
       "
-    >
-      Total Savings :
-      ₹{totalSavings}
-    </p>
+                  >
+                    Total Savings : ₹{totalSavings}
+                  </p>
 
-    <hr />
+                  <hr />
 
-    <h3
-      className="
+                  <h3
+                    className="
         text-primary
       "
-    >
-      Grand Total :
-      ₹{total}
-    </h3>
+                  >
+                    Grand Total : ₹{total}
+                  </h3>
 
-    <button
-      className="
+                  <button
+                    className="
         btn
         btn-success
         w-100
         mt-3
       "
-       onClick={() =>
-    navigate("/orders")
-  }
-    >
-      Proceed To Checkout
-    </button>
-
-  </div>
-
-</div>
-
+                    onClick={() => navigate("/orders")}
+                  >
+                    Proceed To Checkout
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
-        </div>
-      )}
-
-    </div>
+        )}
+      </div>
     </>
   );
 };

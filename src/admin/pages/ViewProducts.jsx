@@ -134,7 +134,7 @@ const ViewProducts = () => {
         <div className="card shadow">
           <div className="card-body">
             <div className="table-responsive">
-              <table className="table table-bordered table-hover align-middle">
+              <table className="table table-bordered table-hover align-middle table-striped">
                 <thead>
                   <tr>
                     <th>Image</th>

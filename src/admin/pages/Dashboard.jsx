@@ -3,13 +3,22 @@ import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 import { collection, getDocs } from "firebase/firestore";
-
+import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase/firebase";
-
+import {
+  FaBoxOpen,
+  FaWarehouse,
+  FaExclamationTriangle,
+  FaRupeeSign,
+   FaTags,
+  FaChartLine,
+  FaTimesCircle,
+  FaPercentage,
+} from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
 const Dashboard = () => {
-  
+  const navigate = useNavigate();
   const isAdmin = localStorage.getItem("admin");
 
   const [totalProducts, setTotalProducts] = useState(0);
@@ -35,86 +44,221 @@ const Dashboard = () => {
   const [latestProduct, setLatestProduct] = useState(null);
 
   const [recentProducts, setRecentProducts] = useState([]);
+const [totalOrders, setTotalOrders] = useState(0);
+
+const [pendingOrders, setPendingOrders] = useState(0);
+
+const [deliveredOrders, setDeliveredOrders] = useState(0);
+
+const [cancelledOrders, setCancelledOrders] = useState(0);
+const [totalUsers, setTotalUsers] = useState(0);
+
+const [todayRevenue, setTodayRevenue] = useState(0);
+
+const [recentOrders, setRecentOrders] = useState([]);
+const [topSellingProducts, setTopSellingProducts] = useState([]);
+const [topCustomers, setTopCustomers] = useState([]);
+
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "products"));
+ const fetchDashboardData = async () => {
+  try {
+    // ================= PRODUCTS =================
 
-      const products = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const snapshot = await getDocs(collection(db, "products"));
 
-      setTotalProducts(products.length);
+    const products = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-      setTotalStock(
-        products.reduce((sum, item) => sum + Number(item.stock || 0), 0),
-      );
+    console.log("Products :", products.length);
 
-      setLowStock(products.filter((item) => Number(item.stock) < 5).length);
+    setTotalProducts(products.length);
 
-      setOutOfStock(products.filter((item) => Number(item.stock) === 0).length);
+    setTotalStock(
+      products.reduce((sum, item) => sum + Number(item.stock || 0), 0)
+    );
 
-      setInventoryValue(
-        products.reduce(
-          (sum, item) =>
-            sum +
-            Number(item.discountPrice || item.price || 0) *
-              Number(item.stock || 0),
-          0,
-        ),
-      );
+   
 
-      const categories = [...new Set(products.map((item) => item.category))];
+    setInventoryValue(
+      products.reduce(
+        (sum, item) =>
+          sum +
+          Number(item.discountPrice || item.price || 0) *
+            Number(item.stock || 0),
+        0
+      )
+    );
 
-      setCategoriesCount(categories.length);
+    const categories = [
+      ...new Set(products.map((item) => item.category)),
+    ];
 
-      const totalPrice = products.reduce(
-        (sum, item) => sum + Number(item.price || 0),
-        0,
-      );
+    setCategoriesCount(categories.length);
 
-      setAvgPrice(
-        products.length ? Math.round(totalPrice / products.length) : 0,
-      );
+    const totalPrice = products.reduce(
+      (sum, item) => sum + Number(item.price || 0),
+      0
+    );
 
-      setDiscountProducts(
-        products.filter((item) => Number(item.discountPrice) > 0).length,
-      );
+    setAvgPrice(
+      products.length
+        ? Math.round(totalPrice / products.length)
+        : 0
+    );
 
-      const highest = [...products].sort(
-        (a, b) => Number(b.price) - Number(a.price),
-      )[0];
+    setDiscountProducts(
+      products.filter(
+        (item) => Number(item.discountPrice) > 0
+      ).length
+    );
 
-      setHighestProduct(highest);
+    const highest = [...products].sort(
+      (a, b) => Number(b.price) - Number(a.price)
+    )[0];
 
-      const lowest = [...products].sort(
-        (a, b) => Number(a.price) - Number(b.price),
-      )[0];
+    setHighestProduct(highest);
 
-      setLowestProduct(lowest);
+    const lowest = [...products].sort(
+      (a, b) => Number(a.price) - Number(b.price)
+    )[0];
 
-      const latest = [...products].sort(
-        (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
-      )[0];
+    setLowestProduct(lowest);
 
-      setLatestProduct(latest);
+    const latest = [...products].sort(
+      (a, b) =>
+        (b.createdAt?.seconds || 0) -
+        (a.createdAt?.seconds || 0)
+    )[0];
 
-      const recent = [...products]
+    setLatestProduct(latest);
+
+    setRecentProducts(
+      [...products]
         .sort(
-          (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
+          (a, b) =>
+            (b.createdAt?.seconds || 0) -
+            (a.createdAt?.seconds || 0)
         )
-        .slice(0, 5);
+        .slice(0, 5)
+    );
 
-      setRecentProducts(recent);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    // ================= ORDERS =================
+
+    const orderSnapshot = await getDocs(
+      collection(db, "orders")
+    );
+
+    console.log("Orders Docs :", orderSnapshot.size);
+
+    const orders = orderSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log("Orders Array :", orders);
+
+    setTotalOrders(orders.length);
+
+    setPendingOrders(
+      orders.filter((o) =>
+        ["Pending", "Processing", "Shipped"].includes(
+          o.orderStatus
+        )
+      ).length
+    );
+
+    setDeliveredOrders(
+      orders.filter(
+        (o) => o.orderStatus === "Delivered"
+      ).length
+    );
+
+    setCancelledOrders(
+      orders.filter(
+        (o) => o.orderStatus === "Cancelled"
+      ).length
+    );
+
+    // ================= USERS =================
+
+    const usersSnapshot = await getDocs(
+      collection(db, "users")
+    );
+
+    console.log("Users Docs :", usersSnapshot.size);
+
+    usersSnapshot.forEach((doc) => {
+      console.log(doc.id, doc.data());
+    });
+
+    setTotalUsers(usersSnapshot.size);
+
+    // ================= TODAY REVENUE =================
+
+    const today = new Date().toLocaleDateString("en-IN");
+
+    const revenue = orders
+      .filter((order) => {
+        if (!order.createdAt) return false;
+
+        const orderDate = new Date(
+          order.createdAt.seconds * 1000
+        ).toLocaleDateString("en-IN");
+
+        return orderDate === today;
+      })
+      .reduce(
+        (sum, order) =>
+          sum + Number(order.totalAmount || 0),
+        0
+      );
+
+    setTodayRevenue(revenue);
+
+    // ================= RECENT ORDERS =================
+
+   
+
+// ================= TOP CUSTOMERS =================
+
+const customerMap = {};
+
+orders.forEach((order) => {
+  const email = order.userEmail || "Unknown";
+
+  if (!customerMap[email]) {
+    customerMap[email] = {
+      customerName: order.customerName,
+      email: order.userEmail,
+      mobile: order.mobile,
+      totalOrders: 0,
+      totalSpent: 0,
+    };
+  }
+
+  customerMap[email].totalOrders += 1;
+
+  customerMap[email].totalSpent += Number(
+    order.totalAmount || 0
+  );
+});
+
+const topCustomersData = Object.values(customerMap)
+  .sort((a, b) => b.totalSpent - a.totalSpent)
+  .slice(0, 5);
+
+setTopCustomers(topCustomersData);
+    console.log("Dashboard Loaded Successfully");
+  } catch (error) {
+    console.error("Dashboard Error :", error);
+  }
+};
 
   if (!isAdmin) {
     return <Navigate to="/login" />;
@@ -132,189 +276,399 @@ const Dashboard = () => {
         }}
       >
         <h1 className="mb-4">Admin Dashboard</h1>
-        <div className="row">
-          <div className="col-md-3 mb-4">
-            <div className="card shadow border-0">
-              <div className="card-body">
-                <h6 style={{ color: "green" }}>Total Products</h6>
-                <h2>{totalProducts}</h2>
-              </div>
-            </div>
-          </div>
+       <div className="row g-4 mb-4">
 
-          <div className="col-md-3 mb-4">
-            <div className="card shadow border-0">
-              <div className="card-body">
-                <h6 style={{ color: "blue" }}>Total Stock</h6>
-                <h2>{totalStock}</h2>
-              </div>
-            </div>
-          </div>
+  <div className="col-md-3">
+    <div
+      className="card  shadow-sm h-100"
+      style={{
+        borderLeft: "5px solid #0d6efd",
+      }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small className="text-muted">
+            Total Products
+          </small>
 
-          <div className="col-md-3 mb-4">
-            <div className="card shadow border-0">
-              <div className="card-body">
-                <h6 style={{ color: "red" }}>Low Stock</h6>
-                <h2 className="text-danger">{lowStock}</h2>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-3 mb-4">
-            <div className="card shadow border-0">
-              <div className="card-body">
-                <h6>Inventory Value</h6>
-                <h2 className="text-success">₹{inventoryValue}</h2>
-              </div>
-            </div>
-          </div>
+          <h2 className="fw-bold mt-2">
+            {totalProducts}
+          </h2>
         </div>
 
-        <div className="row">
-          <div className="col-md-3 mb-4">
-            <div className="card shadow">
-              <div className="card-body">
-                <h6 style={{ color: "gray" }}>Out Of Stock</h6>
-                <h2>{outOfStock}</h2>
-              </div>
-            </div>
-          </div>
+        <FaBoxOpen
+          size={45}
+          color="#0d6efd"
+        />
+      </div>
+    </div>
+  </div>
 
-          <div className="col-md-3 mb-4">
-            <div className="card shadow">
-              <div className="card-body">
-                <h6 style={{ color: "#ff5500" }}>Categories</h6>
-                <h2>{categoriesCount}</h2>
-              </div>
-            </div>
-          </div>
+  <div className="col-md-3">
+    <div
+      className="card shadow-sm h-100"
+      style={{
+        borderLeft: "5px solid #198754",
+      }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small className="text-muted">
+            Total Stock
+          </small>
 
-          <div className="col-md-3 mb-4">
-            <div className="card shadow">
-              <div className="card-body">
-                <h6 style={{ color: "#879104" }}>Average Price</h6>
-                <h2>₹{avgPrice}</h2>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-3 mb-4">
-            <div className="card shadow">
-              <div className="card-body">
-                <h6>Discount Products</h6>
-                <h2>{discountProducts}</h2>
-              </div>
-            </div>
-          </div>
+          <h2 className="fw-bold mt-2">
+            {totalStock}
+          </h2>
         </div>
 
-        <div className="row">
-          <div className="col-md-4 mb-4">
-            <div className="card shadow h-100">
-              <div className="card-body">
-                <h5>Highest Price Product</h5>
+        <FaWarehouse
+          size={45}
+          color="#198754"
+        />
+      </div>
+    </div>
+  </div>
 
-                <h4>{highestProduct?.productName}</h4>
+  <div className="col-md-3">
+    <div
+      className="card  shadow-sm h-100"
+      style={{
+        borderLeft: "5px solid #ffc107",
+      }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small className="text-muted">
+            Low Stock
+          </small>
 
-                <h3 className="text-success">₹{highestProduct?.price}</h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4 mb-4">
-            <div className="card shadow h-100">
-              <div className="card-body">
-                <h5>Lowest Price Product</h5>
-
-                <h4>{lowestProduct?.productName}</h4>
-
-                <h3 className="text-primary">₹{lowestProduct?.price}</h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4 mb-4">
-            <div className="card shadow h-100">
-              <div className="card-body">
-                <h5>Latest Product</h5>
-
-                <h4>{latestProduct?.productName}</h4>
-
-                <p>{latestProduct?.category}</p>
-              </div>
-            </div>
-          </div>
+          <h2 className="fw-bold mt-2 text-warning">
+            {lowStock}
+          </h2>
         </div>
 
-        <div className="card shadow">
-          <div className="card-body">
-            <h4 className="mb-3">Recent Products</h4>
+        <FaExclamationTriangle
+          size={45}
+          color="#ffc107"
+        />
+      </div>
+    </div>
+  </div>
 
-            <table className="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Original Price</th>
-                  <th>Final Price</th>
-                  <th>You Save</th>
-                  <th>Stock</th>
-                </tr>
-              </thead>
+  <div className="col-md-3">
+    <div
+      className="card  shadow-sm h-100"
+      style={{
+        borderLeft: "5px solid #dc3545",
+      }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small className="text-muted">
+            Inventory Value
+          </small>
 
-              <tbody>
-                {recentProducts.map((product) => {
-                  const finalPrice =
-                    product.discountPrice > 0
-                      ? product.discountPrice
-                      : product.price;
-
-                  const savedAmount =
-                    product.discountPrice > 0
-                      ? product.price - product.discountPrice
-                      : 0;
-
-                  return (
-                    <tr key={product.id}>
-                      <td>{product.productName}</td>
-
-                      <td>{product.category}</td>
-
-                      <td>
-                        <span
-                          style={{
-                            textDecoration: "line-through",
-                            color: "gray",
-                          }}
-                        >
-                          ₹{product.price}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="fw-bold text-success">
-                          ₹{finalPrice}
-                        </span>
-                      </td>
-
-                      <td>
-                        {savedAmount > 0 ? (
-                          <span className="badge bg-success">
-                            ₹{savedAmount}
-                          </span>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-
-                      <td>{product.stock}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <h2 className="fw-bold mt-2 text-danger">
+            ₹{inventoryValue.toLocaleString()}
+          </h2>
         </div>
+
+        <FaRupeeSign
+          size={45}
+          color="#dc3545"
+        />
+      </div>
+    </div>
+  </div>
+
+</div>
+<div className="row g-4 mb-4">
+
+<div className="col-md-6">
+
+<div className="card shadow-sm border-0">
+
+<div className="card-body">
+
+<h6>Total Users</h6>
+
+<h2 className="text-primary">
+{totalUsers}
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div className="col-md-6">
+
+<div className="card shadow-sm border-0">
+
+<div className="card-body">
+
+<h6>Today's Revenue</h6>
+
+<h2 className="text-success">
+₹{todayRevenue.toLocaleString()}
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+        <div className="row g-4 mb-4">
+
+  {/* Out Of Stock */}
+
+  <div className="col-md-3">
+    <div
+      className="card border-0 shadow-sm h-100"
+      style={{ borderLeft: "5px solid #dc3545" }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+
+        <div>
+          <small className="text-muted">
+            Out Of Stock
+          </small>
+
+          <h2 className="fw-bold text-danger mt-2">
+            {outOfStock}
+          </h2>
+        </div>
+
+        <FaTimesCircle
+          size={45}
+          color="#dc3545"
+        />
+
+      </div>
+    </div>
+  </div>
+
+  {/* Categories */}
+
+  <div className="col-md-3">
+    <div
+      className="card border-0 shadow-sm h-100"
+      style={{ borderLeft: "5px solid #fd7e14" }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+
+        <div>
+          <small className="text-muted">
+            Categories
+          </small>
+
+          <h2 className="fw-bold mt-2">
+            {categoriesCount}
+          </h2>
+        </div>
+
+        <FaTags
+          size={45}
+          color="#fd7e14"
+        />
+
+      </div>
+    </div>
+  </div>
+
+  {/* Average Price */}
+
+  <div className="col-md-3">
+    <div
+      className="card border-0 shadow-sm h-100"
+      style={{ borderLeft: "5px solid #20c997" }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+
+        <div>
+          <small className="text-muted">
+            Average Price
+          </small>
+
+          <h2 className="fw-bold text-success mt-2">
+            ₹{avgPrice}
+          </h2>
+        </div>
+
+        <FaChartLine
+          size={45}
+          color="#20c997"
+        />
+
+      </div>
+    </div>
+  </div>
+
+  {/* Discount Products */}
+
+  <div className="col-md-3">
+    <div
+      className="card border-0 shadow-sm h-100"
+      style={{ borderLeft: "5px solid #6f42c1" }}
+    >
+      <div className="card-body d-flex justify-content-between align-items-center">
+
+        <div>
+          <small className="text-muted">
+            Discount Products
+          </small>
+
+          <h2 className="fw-bold text-primary mt-2">
+            {discountProducts}
+          </h2>
+        </div>
+
+        <FaPercentage
+          size={45}
+          color="#6f42c1"
+        />
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+        <div className="row g-4 mb-4">
+
+  {/* Highest Price Product */}
+
+  <div className="col-lg-4">
+
+    <div className="card shadow-sm border-0 h-100">
+
+      <div className="card-header bg-success text-white">
+        💎 Highest Price Product
+      </div>
+
+      <div className="card-body text-center">
+
+        <img
+          src={highestProduct?.imagePath}
+          alt=""
+          style={{
+            width: "120px",
+            height: "120px",
+            objectFit: "cover",
+            borderRadius: "12px",
+          }}
+        />
+
+        <h5 className="mt-3">
+          {highestProduct?.productName}
+        </h5>
+
+        <p className="text-muted">
+          {highestProduct?.category}
+        </p>
+
+        <h3 className="text-success">
+          ₹{highestProduct?.price}
+        </h3>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* Lowest Price Product */}
+
+  <div className="col-lg-4">
+
+    <div className="card shadow-sm border-0 h-100">
+
+      <div className="card-header bg-primary text-white">
+        💰 Lowest Price Product
+      </div>
+
+      <div className="card-body text-center">
+
+        <img
+          src={lowestProduct?.imagePath}
+          alt=""
+          style={{
+            width: "120px",
+            height: "120px",
+            objectFit: "cover",
+            borderRadius: "12px",
+          }}
+        />
+
+        <h5 className="mt-3">
+          {lowestProduct?.productName}
+        </h5>
+
+        <p className="text-muted">
+          {lowestProduct?.category}
+        </p>
+
+        <h3 className="text-primary">
+          ₹{lowestProduct?.price}
+        </h3>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* Latest Product */}
+
+  <div className="col-lg-4">
+
+    <div className="card shadow-sm border-0 h-100">
+
+      <div className="card-header bg-warning">
+        🆕 Latest Product
+      </div>
+
+      <div className="card-body text-center">
+
+        <img
+          src={latestProduct?.imagePath}
+          alt=""
+          style={{
+            width: "120px",
+            height: "120px",
+            objectFit: "cover",
+            borderRadius: "12px",
+          }}
+        />
+
+        <h5 className="mt-3">
+          {latestProduct?.productName}
+        </h5>
+
+        <p className="text-muted">
+          {latestProduct?.category}
+        </p>
+
+        <h3 className="text-dark">
+          ₹
+          {latestProduct?.discountPrice ||
+            latestProduct?.price}
+        </h3>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
       </div>
     </div>
   );

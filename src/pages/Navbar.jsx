@@ -235,11 +235,11 @@ const [wishlistCount,
                     className="
                     position-absolute
                     
-                    start-100
+                    
                     translate-middle
                     badge
                     rounded-pill
-                    bg-danger
+                    
                     badg
                     "
                   >
@@ -276,13 +276,13 @@ const [wishlistCount,
 
           <div className="d-flex align-items-center">
 
-            <span className="text-white me-3">
+            <span className="e-text me-3">
               {user}
             </span>
 
             <button
               type="button"
-              className="btn btn-danger"
+              className="btn btn-danger btn-log"
               onClick={handleLogout}
             >
               <FaSignOutAlt className="me-1" />
