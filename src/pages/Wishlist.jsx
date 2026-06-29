@@ -288,10 +288,12 @@ const getDeliveryDate = () => {
 
              <div className="card-body text-center">
 
-  <h5 className="fw-bold mb-2">
+  {/* <h5 className="fw-bold mb-2">
     {item.productName}
+  </h5> */}
+  <h5 className="fw-bold mb-2">
+    {item.category}
   </h5>
-
 
 {/* Sizes */}
 {item.selectedSize && (

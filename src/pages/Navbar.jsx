@@ -6,7 +6,7 @@ import React, {
 } from "react";
 
 import {
-  Link,
+  NavLink,
   useNavigate,
 } from "react-router-dom";
 
@@ -97,12 +97,14 @@ const [wishlistCount,
   };
 }, [user]);
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
   try {
 
     await signOut(auth);
 
     localStorage.removeItem("currentUser");
+    localStorage.removeItem("currentUserUid"); // <-- Add this
+
     localStorage.removeItem("user");
     localStorage.removeItem("admin");
     localStorage.removeItem("adminData");
@@ -126,12 +128,12 @@ const [wishlistCount,
 
       <div className="container">
 
-        <Link
+        <NavLink
           className="navbar-brand fw-bold"
           to="/"
         >
           Shop
-        </Link>
+        </NavLink>
 
         <button
           className="navbar-toggler"
@@ -150,21 +152,25 @@ const [wishlistCount,
           <ul className="navbar-nav me-auto">
 
             <li className="nav-item">
-              <Link
-                to="/"
-                className="nav-link"
-              >
-                <FaHome className="me-1" />
-                Home
-              </Link>
+             <NavLink
+  to="/"
+  className={({ isActive }) =>
+    isActive ? "nav-link text-danger fw-bold" : "nav-link"
+  }
+>Home
+</NavLink>
             </li>
 
            <li className="nav-item">
 
-  <Link
-    to="/wishlist"
-    className="nav-link position-relative"
-  >
+ <NavLink
+  to="/wishlist"
+  className={({ isActive }) =>
+    isActive
+      ? "nav-link position-relative text-danger fw-bold"
+      : "nav-link position-relative"
+  }
+>
 
    
 
@@ -214,15 +220,19 @@ const [wishlistCount,
       )}
 
     </span>
-  </Link>
+  </NavLink>
 
 </li>
 
             <li className="nav-item">
 
-              <Link
+              <NavLink
                 to="/cart"
-                className="nav-link position-relative"
+                 className={({ isActive }) =>
+    isActive
+      ? "nav-link position-relative text-danger fw-bold"
+      : "nav-link position-relative"
+  }
               >
 
                 <FaShoppingCart className="me-1" />
@@ -248,28 +258,36 @@ const [wishlistCount,
 
                 )}
 
-              </Link>
+              </NavLink>
 
             </li>
 
             <li className="nav-item">
-              <Link
+              <NavLink
                 to="/myorders"
-                className="nav-link"
+                 className={({ isActive }) =>
+    isActive
+      ? "nav-link position-relative text-danger fw-bold"
+      : "nav-link position-relative"
+  }
               >
                 <FaClipboardList className="me-1" />
                 My Orders
-              </Link>
+              </NavLink>
             </li>
 
             <li className="nav-item">
-              <Link
+              <NavLink
                 to="/profile"
-                className="nav-link"
+                 className={({ isActive }) =>
+    isActive
+      ? "nav-link position-relative text-danger fw-bold"
+      : "nav-link position-relative"
+  }
               >
                 <FaUser className="me-1" />
                 Profile
-              </Link>
+              </NavLink>
             </li>
 
           </ul>

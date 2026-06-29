@@ -87,7 +87,7 @@ const Login = () => {
           "currentUser",
           user.email
         );
-
+localStorage.setItem("currentUserUid", user.uid);
         if (
           role === "admin"
         ) {

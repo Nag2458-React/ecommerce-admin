@@ -8,7 +8,7 @@ import StarRating from "./StarRating";
 
 const Products = () => {
   const [loading, setLoading] = useState(false);
-
+const [colorImageKey, setColorImageKey] = useState(0);
 const [form, setForm] = useState({
   productName: "",
   category: "",
@@ -36,25 +36,33 @@ const [form, setForm] = useState({
   returnDays: "7",
 });
 const addColor = () => {
+
   if (!form.colorName || !form.colorImage) {
-    alert("Enter Color Name & Image");
+    alert("Please Select Color & Image");
     return;
   }
 
-  setForm({
-    ...form,
+  setForm((prev) => ({
+
+    ...prev,
+
     colors: [
-      ...form.colors,
+      ...prev.colors,
       {
-        name: form.colorName,
-        code: form.colorCode,
-        image: form.colorImage,
+        name: prev.colorName,
+        code: prev.colorCode,
+        image: prev.colorImage,
       },
     ],
+
     colorName: "",
+
     colorCode: "#ff0000",
+
     colorImage: "",
-  });
+
+  }));
+setColorImageKey((prev) => prev + 1);
 };
   const handleChange = (e) => {
     setForm({
@@ -168,8 +176,49 @@ const addColor = () => {
       });
     }
   };
+const handleImageUpload = (e) => {
 
-  
+const file = e.target.files[0];
+
+if (!file) return;
+
+const reader = new FileReader();
+
+reader.onloadend = () => {
+
+setForm((prev) => ({
+
+...prev,
+
+imagePath: reader.result,
+
+}));
+
+};
+
+reader.readAsDataURL(file);
+
+};
+ const handleColorImage = (e) => {
+
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+
+    setForm((prev) => ({
+      ...prev,
+      colorImage: reader.result,
+    }));
+
+  };
+
+  reader.readAsDataURL(file);
+
+};
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -289,15 +338,38 @@ const addColor = () => {
                   />
                 </div>
                 <div className="col-md-4">
-                  <input
-                    type="text"
-                    name="imagePath"
-                    placeholder="/images/bangle1.jpg"
-                    className="form-control mb-3"
-                    value={form.imagePath}
-                    onChange={handleChange}
-                  />
-                </div>
+
+<label className="fw-bold mb-2">
+Product Image
+</label>
+
+<input
+type="file"
+accept="image/*"
+className="form-control"
+onChange={handleImageUpload}
+/>
+
+</div>
+<div className="col-md-4">
+
+{form.imagePath && (
+
+<img
+src={form.imagePath}
+alt=""
+style={{
+width:"120px",
+height:"120px",
+objectFit:"cover",
+borderRadius:"10px",
+border:"1px solid #ddd"
+}}
+/>
+
+)}
+
+</div>
            <div className="col-md-4 mb-3">
   <label className="fw-bold d-block mb-2">
     Product Rating
@@ -384,20 +456,31 @@ const addColor = () => {
 </div>
 
 <div className="col-md-4">
-  <input
-    type="text"
-    placeholder="/images/red.jpg"
-    className="form-control mb-2"
-    value={form.colorImage}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        colorImage: e.target.value,
-      })
-    }
-  />
+<input
+type="file"
+key={colorImageKey}
+accept="image/*"
+className="form-control"
+onChange={handleColorImage}
+/>
 </div>
+<div className="col-md-4">
+  {form.colorImage && (
 
+<img
+  src={form.colorImage}
+  alt=""
+  style={{
+    width:80,
+    height:80,
+    objectFit:"cover",
+    borderRadius:8,
+    marginTop:10
+  }}
+/>
+
+)}
+</div>
 <div className="col-md-4">
   <button
     type="button"

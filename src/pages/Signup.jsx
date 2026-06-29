@@ -5,7 +5,10 @@ import React, {
 import {
   createUserWithEmailAndPassword
 } from "firebase/auth";
-
+import {
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 import {
   doc,
   setDoc
@@ -26,26 +29,18 @@ const Signup = () => {
   const navigate =
     useNavigate();
 
-  const [name,
-    setName] =
-    useState("");
+  const [name,    setName] =    useState("");
 
-  const [email,
-    setEmail] =
-    useState("");
+  const [email,    setEmail] =    useState("");
 
-  const [phone,
-    setPhone] =
-    useState("");
+  const [phone,    setPhone] =    useState("");
+   const [state,    setState] =    useState("");
+    const [city,    setCity] =    useState("");
+    const [pincode,    setPincode] =    useState("");
+  const [address,    setAddress] =    useState("");
 
-  const [address,
-    setAddress] =
-    useState("");
-
-  const [password,
-    setPassword] =
-    useState("");
-
+  const [password,    setPassword] =    useState("");
+const [showPassword, setShowPassword] = useState(false);
   const handleSignup =
     async (e) => {
 
@@ -63,29 +58,18 @@ const Signup = () => {
       const user =
         userCredential.user;
 
-      await setDoc(
-        doc(
-          db,
-          "users",
-          user.uid
-        ),
-        {
-
-          name,
-
-          email,
-
-          phone,
-
-          address,
-
-          role: "user",
-
-          createdAt:
-          new Date()
-
-        }
-      );
+     await setDoc(doc(db, "users", user.uid), {
+  name,
+  email,
+  phone,
+  state,
+  city,
+  pincode,
+  address,
+  profileImage: "",
+  role: "user",
+  createdAt: new Date(),
+});
 
       alert(
         "Signup Success"
@@ -136,7 +120,7 @@ return (
     <div
       className="card shadow p-4"
       style={{
-        width: "450px",
+        width: "720px",
         border: "none",
         borderRadius: "15px",
         background: "#fff",
@@ -150,7 +134,8 @@ return (
       </h2>
 
       <form onSubmit={handleSignup}>
-
+<div className="row">
+  <div className="col-md-6">
         <div className="mb-3">
 
           <label className="mb-2">
@@ -168,7 +153,8 @@ return (
           />
 
         </div>
-
+</div>
+ <div className="col-md-6">
         <div className="mb-3">
 
           <label className="mb-2">
@@ -186,7 +172,49 @@ return (
           />
 
         </div>
+</div>
+<div className="col-md-6">
+  <div className="mb-4">
 
+    <label className="mb-2">
+      Password
+    </label>
+
+    <div className="position-relative">
+
+      <input
+        type={showPassword ? "text" : "password"}
+        className="form-control"
+        value={password}
+        onChange={(e) =>
+          setPassword(e.target.value)
+        }
+        required
+      />
+
+      <span
+        style={{
+          position: "absolute",
+          right: "15px",
+          top: "10px",
+          cursor: "pointer",
+        }}
+        onClick={() =>
+          setShowPassword(!showPassword)
+        }
+      >
+        {showPassword ? (
+          <FaEyeSlash />
+        ) : (
+          <FaEye />
+        )}
+      </span>
+
+    </div>
+
+  </div>
+</div>
+ <div className="col-md-6">
         <div className="mb-3">
 
           <label className="mb-2">
@@ -204,7 +232,65 @@ return (
           />
 
         </div>
+        </div>
+        <div className="col-md-6">
+  <div className="mb-3">
 
+          <label className="mb-2">
+            State
+          </label>
+
+          <input
+            type="text"
+            className="form-control"
+            value={state}
+            onChange={(e)=>
+              setState(e.target.value)
+            }
+            required
+          />
+
+        </div>
+        </div>
+        <div className="col-md-6">
+  <div className="mb-3">
+
+          <label className="mb-2">
+            City
+          </label>
+
+          <input
+            type="text"
+            className="form-control"
+            value={city}
+            onChange={(e)=>
+              setCity(e.target.value)
+            }
+            required
+          />
+
+        </div>
+        </div>
+        <div className="col-md-6">
+  <div className="mb-3">
+
+          <label className="mb-2">
+            Pincode
+          </label>
+
+          <input
+            type="number"
+            className="form-control"
+            value={pincode}
+            onChange={(e)=>
+              setPincode(e.target.value)
+            }
+            required
+          />
+
+        </div>
+        </div>
+        <div className="col-md-6">
         <div className="mb-3">
 
           <label className="mb-2">
@@ -222,25 +308,9 @@ return (
           />
 
         </div>
+</div>
 
-        <div className="mb-4">
-
-          <label className="mb-2">
-            Password
-          </label>
-
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e)=>
-              setPassword(e.target.value)
-            }
-            required
-          />
-
-        </div>
-
+</div>
         <button
           className="
             btn

@@ -198,10 +198,11 @@ window.dispatchEvent(
     minHeight: "100vh",
   }}
 >
+  <div className="col-md-12" style={{textAlign:"right"}}>
         <button className="btn btn-dark mb-3" onClick={() => navigate(-1)}>
           ← Back
         </button>
-
+</div>
         <div className="row g-4">
           {/* IMAGE */}
 
@@ -213,7 +214,7 @@ window.dispatchEvent(
       top: "20px"
     }}
   >
-            <h6 className="mt-2 text-danger">Current Image: {mainImage}</h6>
+            {/* <h6 className="mt-2 text-danger">Current Image: {mainImage}</h6> */}
            <Zoom>
   <img
     key={mainImage}
