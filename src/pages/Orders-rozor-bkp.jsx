@@ -234,7 +234,7 @@ return (
           </h3>
 
           <div className="mb-3">
-            <label>Name</label>
+            <label>Name1</label>
             <input
               type="text"
               className="form-control"

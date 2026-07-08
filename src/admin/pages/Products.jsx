@@ -221,9 +221,14 @@ reader.readAsDataURL(file);
 };
   return (
     <div className="d-flex">
+      <div style={{width:"20%"}}>
       <AdminSidebar />
-
-      <div className="flex-grow-1 p-4 bg-light">
+</div>
+      <div className="flex-grow-1 p-4 bg-light" style={{
+          background: "#f5f5f5",
+          minHeight: "100vh",
+          width:"80%"
+        }}>
         <div className="card shadow border-0">
           <div className="card-body">
             <h2 className="mb-4">Add Product</h2>
@@ -231,6 +236,9 @@ reader.readAsDataURL(file);
             <form onSubmit={handleSubmit}>
               <div className="row">
                 <div className="col-md-4">
+                  <label className="fw-bold mb-2">
+Product Name
+</label>
                   <input
                     type="text"
                     name="productName"
@@ -241,6 +249,9 @@ reader.readAsDataURL(file);
                   />
                 </div>
                 <div className="col-md-4">
+                  <label className="fw-bold mb-2">
+Product Category
+</label>
                   <select
                     name="category"
                     className="form-control mb-3"
@@ -298,6 +309,9 @@ reader.readAsDataURL(file);
                 </div> */}
 
                 <div className="col-md-4">
+                  <label className="fw-bold mb-2">
+Product Material
+</label>
                   <input
                     type="text"
                     name="material"
@@ -308,6 +322,9 @@ reader.readAsDataURL(file);
                   />
                 </div>
                 <div className="col-md-4">
+                  <label className="fw-bold mb-2">
+Product Price
+</label>
                   <input
                     type="number"
                     name="price"
@@ -318,6 +335,9 @@ reader.readAsDataURL(file);
                   />
                 </div>
                 <div className="col-md-4">
+                  <label className="fw-bold mb-2">
+Product Discount
+</label>
                   <input
                     type="number"
                     name="discountPrice"
@@ -328,6 +348,9 @@ reader.readAsDataURL(file);
                   />
                 </div>
                 <div className="col-md-4">
+                  <label className="fw-bold mb-2">
+Product Stock
+</label>
                   <input
                     type="number"
                     name="stock"
@@ -351,7 +374,7 @@ onChange={handleImageUpload}
 />
 
 </div>
-<div className="col-md-4">
+{/* <div className="col-md-4">
 
 {form.imagePath && (
 
@@ -369,7 +392,7 @@ border:"1px solid #ddd"
 
 )}
 
-</div>
+</div> */}
            <div className="col-md-4 mb-3">
   <label className="fw-bold d-block mb-2">
     Product Rating
@@ -397,6 +420,9 @@ border:"1px solid #ddd"
   </div>
 </div>
 <div className="col-md-4">
+  <label className="fw-bold mb-2">
+Product Review Count
+</label>
   <input
     type="number"
     name="reviewCount"
@@ -417,6 +443,9 @@ border:"1px solid #ddd"
   />
 </div>
 <div className="col-md-4">
+  <label className="fw-bold mb-2">
+Product Return Days
+</label>
   <input
     type="number"
     name="returnDays"
@@ -427,6 +456,10 @@ border:"1px solid #ddd"
   />
 </div>
 <div className="col-md-4">
+  <label className="fw-bold mb-2">
+Product Color Image
+</label>
+<div className="d-flex">
   <input
     type="text"
     placeholder="Color Name (Red)"
@@ -439,10 +472,7 @@ border:"1px solid #ddd"
       })
     }
   />
-</div>
-
-<div className="col-md-4">
-  <input
+    <input
     type="color"
     className="form-control form-control-color mb-2"
     value={form.colorCode}
@@ -453,9 +483,15 @@ border:"1px solid #ddd"
       })
     }
   />
+  </div>
 </div>
 
+
+
 <div className="col-md-4">
+  <label className="fw-bold mb-2">
+Product Color Image
+</label>
 <input
 type="file"
 key={colorImageKey}

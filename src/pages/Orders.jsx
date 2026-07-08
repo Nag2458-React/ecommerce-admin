@@ -97,48 +97,56 @@ const Orders = () => {
             <div className="card shadow">
               <div className="card-body">
                 <h3>Delivery Address</h3>
-
+<div className="row">
+  <div className="col-md-4">
                 <input
                   className="form-control mb-3"
                   placeholder="Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
-
+</div>
+<div className="col-md-4">
                 <input
                   className="form-control mb-3"
                   placeholder="Mobile"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
                 />
-
+</div>
+<div className="col-md-4">
                 <textarea
                   className="form-control mb-3"
                   placeholder="Address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                 />
-
+</div>
+<div className="col-md-4">
                 <input
                   className="form-control mb-3"
                   placeholder="City"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                 />
-
+</div>
+<div className="col-md-4">
                 <input
                   className="form-control mb-3"
                   placeholder="State"
                   value={stateName}
                   onChange={(e) => setStateName(e.target.value)}
                 />
-
+</div>
+<div className="col-md-4">
                 <input
                   className="form-control"
                   placeholder="Pincode"
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
                 />
+                </div>
+                </div>
               </div>
             </div>
           </div>

@@ -28,16 +28,11 @@ const AdminSidebar = () => {
 
   return (
     <div
-      className="text-white bg"
-      style={{
-        width: "260px",
-        minHeight: "100vh",
-        position: "sticky",
-        top: 0,
-      }}
+      className="bg"
+      
     >
       <div className="bgdark p-3 h-100">
-        <h3 className="text-center mb-4">ADMIN PANEL</h3>
+        <h3 className="text-center mb-4 text-white">ADMIN PANEL</h3>
 
         <hr className="text-secondary" />
 
@@ -80,7 +75,12 @@ const AdminSidebar = () => {
               <span className="ms-2">Recent Products</span>
             </Link>
           </li>
-       
+       <li className="nav-item mb-2">
+            <Link to="/apicruds" className="nav-link text-white">
+              <FaCog />
+              <span className="ms-2">API Cruds</span>
+            </Link>
+          </li>
 <li className="nav-item mb-2">
             <Link to="/cruds" className="nav-link text-white">
               <FaCog />
@@ -149,8 +149,8 @@ const AdminSidebar = () => {
 
           {/* Logout */}
 
-          <li className="mt-3">
-            <button className="btn btndanger w-100" onClick={handleLogout}>
+          <li className="mt-3" style={{position:"sticky",bottom:"0"}}>
+            <button type="submit" className="btn btndanger w-100" onClick={handleLogout}>
               <FaSignOutAlt />
               <span className="ms-2">Logout</span>
             </button>

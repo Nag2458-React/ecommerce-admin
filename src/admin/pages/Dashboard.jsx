@@ -266,13 +266,15 @@ setTopCustomers(topCustomersData);
 
   return (
     <div className="d-flex">
+      <div style={{width:"20%"}}>
       <AdminSidebar />
-
+</div>
       <div
         className="flex-grow-1 p-4 dashboard"
         style={{
           background: "#f5f5f5",
           minHeight: "100vh",
+          width:"80%"
         }}
       >
         <h1 className="mb-4">Admin Dashboard</h1>
@@ -287,17 +289,17 @@ setTopCustomers(topCustomersData);
     >
       <div className="card-body d-flex justify-content-between align-items-center">
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Total Products
           </small>
 
-          <h2 className="fw-bold mt-2">
+          <h2 className="fw-bold mt-2 text-primary">
             {totalProducts}
           </h2>
         </div>
 
         <FaBoxOpen
-          size={45}
+          size={35}
           color="#0d6efd"
         />
       </div>
@@ -313,17 +315,17 @@ setTopCustomers(topCustomersData);
     >
       <div className="card-body d-flex justify-content-between align-items-center">
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Total Stock
           </small>
 
-          <h2 className="fw-bold mt-2">
+          <h2 className="fw-bold mt-2 text-success">
             {totalStock}
           </h2>
         </div>
 
         <FaWarehouse
-          size={45}
+          size={35}
           color="#198754"
         />
       </div>
@@ -339,7 +341,7 @@ setTopCustomers(topCustomersData);
     >
       <div className="card-body d-flex justify-content-between align-items-center">
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Low Stock
           </small>
 
@@ -349,7 +351,7 @@ setTopCustomers(topCustomersData);
         </div>
 
         <FaExclamationTriangle
-          size={45}
+          size={35}
           color="#ffc107"
         />
       </div>
@@ -365,7 +367,7 @@ setTopCustomers(topCustomersData);
     >
       <div className="card-body d-flex justify-content-between align-items-center">
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Inventory Value
           </small>
 
@@ -375,7 +377,7 @@ setTopCustomers(topCustomersData);
         </div>
 
         <FaRupeeSign
-          size={45}
+          size={35}
           color="#dc3545"
         />
       </div>
@@ -391,7 +393,7 @@ setTopCustomers(topCustomersData);
 
 <div className="card-body">
 
-<h6>Total Users</h6>
+<h6 className="text-black fw-bold">Total Users</h6>
 
 <h2 className="text-primary">
 {totalUsers}
@@ -409,7 +411,7 @@ setTopCustomers(topCustomersData);
 
 <div className="card-body">
 
-<h6>Today's Revenue</h6>
+<h6 className="text-black fw-bold">Today's Revenue</h6>
 
 <h2 className="text-success">
 ₹{todayRevenue.toLocaleString()}
@@ -428,13 +430,13 @@ setTopCustomers(topCustomersData);
 
   <div className="col-md-3">
     <div
-      className="card border-0 shadow-sm h-100"
+      className="card  shadow-sm h-100"
       style={{ borderLeft: "5px solid #dc3545" }}
     >
       <div className="card-body d-flex justify-content-between align-items-center">
 
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Out Of Stock
           </small>
 
@@ -444,7 +446,7 @@ setTopCustomers(topCustomersData);
         </div>
 
         <FaTimesCircle
-          size={45}
+          size={35}
           color="#dc3545"
         />
 
@@ -456,13 +458,13 @@ setTopCustomers(topCustomersData);
 
   <div className="col-md-3">
     <div
-      className="card border-0 shadow-sm h-100"
+      className="card  shadow-sm h-100"
       style={{ borderLeft: "5px solid #fd7e14" }}
     >
       <div className="card-body d-flex justify-content-between align-items-center">
 
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Categories
           </small>
 
@@ -472,7 +474,7 @@ setTopCustomers(topCustomersData);
         </div>
 
         <FaTags
-          size={45}
+          size={35}
           color="#fd7e14"
         />
 
@@ -484,13 +486,13 @@ setTopCustomers(topCustomersData);
 
   <div className="col-md-3">
     <div
-      className="card border-0 shadow-sm h-100"
+      className="card  shadow-sm h-100"
       style={{ borderLeft: "5px solid #20c997" }}
     >
       <div className="card-body d-flex justify-content-between align-items-center">
 
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Average Price
           </small>
 
@@ -500,7 +502,7 @@ setTopCustomers(topCustomersData);
         </div>
 
         <FaChartLine
-          size={45}
+          size={35}
           color="#20c997"
         />
 
@@ -512,13 +514,13 @@ setTopCustomers(topCustomersData);
 
   <div className="col-md-3">
     <div
-      className="card border-0 shadow-sm h-100"
+      className="card  shadow-sm h-100"
       style={{ borderLeft: "5px solid #6f42c1" }}
     >
       <div className="card-body d-flex justify-content-between align-items-center">
 
         <div>
-          <small className="text-muted">
+          <small className="text-black fw-bold">
             Discount Products
           </small>
 
@@ -528,7 +530,7 @@ setTopCustomers(topCustomersData);
         </div>
 
         <FaPercentage
-          size={45}
+          size={35}
           color="#6f42c1"
         />
 
@@ -546,12 +548,12 @@ setTopCustomers(topCustomersData);
 
     <div className="card shadow-sm border-0 h-100">
 
-      <div className="card-header bg-success text-white">
+      <div className="card-header bg-success text-white fw-bold">
         💎 Highest Price Product
       </div>
 
       <div className="card-body text-center">
-
+      <div className="d-flex justify-content-evenly">
         <img
           src={highestProduct?.imagePath}
           alt=""
@@ -562,7 +564,7 @@ setTopCustomers(topCustomersData);
             borderRadius: "12px",
           }}
         />
-
+<div style={{textAlign:"left"}}>
         <h5 className="mt-3">
           {highestProduct?.productName}
         </h5>
@@ -574,7 +576,8 @@ setTopCustomers(topCustomersData);
         <h3 className="text-success">
           ₹{highestProduct?.price}
         </h3>
-
+</div>
+</div>
       </div>
 
     </div>
@@ -587,12 +590,12 @@ setTopCustomers(topCustomersData);
 
     <div className="card shadow-sm border-0 h-100">
 
-      <div className="card-header bg-primary text-white">
+      <div className="card-header bg-primary text-white fw-bold">
         💰 Lowest Price Product
       </div>
 
       <div className="card-body text-center">
-
+ <div className="d-flex justify-content-evenly">
         <img
           src={lowestProduct?.imagePath}
           alt=""
@@ -603,7 +606,7 @@ setTopCustomers(topCustomersData);
             borderRadius: "12px",
           }}
         />
-
+  <div style={{textAlign:"left"}}>
         <h5 className="mt-3">
           {lowestProduct?.productName}
         </h5>
@@ -615,7 +618,8 @@ setTopCustomers(topCustomersData);
         <h3 className="text-primary">
           ₹{lowestProduct?.price}
         </h3>
-
+</div>
+</div>
       </div>
 
     </div>
@@ -628,12 +632,12 @@ setTopCustomers(topCustomersData);
 
     <div className="card shadow-sm border-0 h-100">
 
-      <div className="card-header bg-warning">
+      <div className="card-header bg-warning fw-bold">
         🆕 Latest Product
       </div>
 
       <div className="card-body text-center">
-
+<div className="d-flex justify-content-evenly">
         <img
           src={latestProduct?.imagePath}
           alt=""
@@ -644,7 +648,7 @@ setTopCustomers(topCustomersData);
             borderRadius: "12px",
           }}
         />
-
+<div style={{textAlign:"left"}}>
         <h5 className="mt-3">
           {latestProduct?.productName}
         </h5>
@@ -658,7 +662,8 @@ setTopCustomers(topCustomersData);
           {latestProduct?.discountPrice ||
             latestProduct?.price}
         </h3>
-
+        </div>
+</div>
       </div>
 
     </div>

@@ -34,9 +34,10 @@ const AdminOrders = () => {
 
   return (
     <div className="d-flex">
+           <div style={{width:"20%",height:"100vh"}}>
       <AdminSidebar />
-   
-    <div className="container py-4">
+   </div>
+    <div className="container py-4" style={{width:"80%"}}>
       <h2 className="mb-4 fw-bold">📦 Placed Orders</h2>
       
 <div className="row">

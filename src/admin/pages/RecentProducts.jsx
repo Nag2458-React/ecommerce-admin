@@ -34,10 +34,10 @@ const RecentProducts = () => {
 
   return (
     <div className="d-flex">
-
+             <div style={{width:"20%"}}>
       <AdminSidebar />
-
-      <div className="container-fluid p-4">
+</div>
+      <div className="container-fluid p-4" style={{width:"80%"}}>
 
         <h2 className="fw-bold mb-4">
           🆕 Recent Products
@@ -47,7 +47,7 @@ const RecentProducts = () => {
 
           <div className="table-responsive">
 
-            <table className="table table-hover align-middle mb-0">
+            <table className="table table-hover align-middle mb-0 table-bordered">
 
               <thead className="table-dark">
 

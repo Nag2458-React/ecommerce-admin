@@ -57,13 +57,15 @@ const Categories = () => {
 
   return (
     <div className="d-flex">
+      <div style={{width:"20%"}}>
       <AdminSidebar />
-
+</div>
       <div
         className="flex-grow-1 p-4"
         style={{
           background: "#f5f5f5",
           minHeight: "100vh",
+          width:"80%"
         }}
       >
         <h2 className="mb-4">Categories</h2>

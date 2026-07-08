@@ -310,7 +310,7 @@ const Orders = () => {
           <div className="row">
 
             <div className="col-md-6 mb-3">
-              <label>Name</label>
+              <label>Name1</label>
 
               <input
                 type="text"

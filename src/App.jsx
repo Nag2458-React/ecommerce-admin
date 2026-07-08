@@ -20,8 +20,9 @@ import UserProtectedRoute from "./UserProtectedRoute";
 import SessionManager from "./SessionManager";
 import MyOrders from "./pages/MyOrders";
 import Cruds from "./Cruds";
+import ApiCruds from "./ApiCruds";
 import Profile from "./pages/Profile";
-import Orders from "./pages/Orders-rozor-bkp";
+import Orders from "./pages/Orders.jsx";
 import ProductDetails from "./pages/ProductDetails";
 import AdminOrders from "./admin/pages/AdminOrders";
 import TopSellingProducts from "./admin/pages/TopSellingProducts";
@@ -57,6 +58,7 @@ const App = () => {
           />
           <Route path="/categories" element={<Categories />} />
           <Route path="/cruds" element={<Cruds />} />
+          <Route path="/apicruds" element={<ApiCruds />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />

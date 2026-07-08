@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useState,useEffect  } from "react";
+import {  collection,  addDoc,  getDocs,deleteDoc,doc} from "firebase/firestore";
+import { db } from "./firebase/firebase";
+import AdminSidebar from "./admin/components/AdminSidebar";
 
 const Cruds = () => {
   const [users, setUsers] = useState({
@@ -10,28 +13,84 @@ const Cruds = () => {
     dob: "",
   });
   const [data, setData] = useState([]);
+  useEffect(() => {
+  fetchUsers();
+}, []);
+const fetchUsers = async () => {
+
+  const snapshot1 = await getDocs(
+    collection(db, "cruds")
+  );
+
+  const list = snapshot1.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  setData(list);
+
+};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUsers({ ...users, [name]: value });
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setData([...data, users]);
+const handleSubmit = async (e) => {
+
+  e.preventDefault();
+
+  try {
+
+    await addDoc(
+      collection(db, "cruds"),
+      users
+    );
+
+    fetchUsers();
+
     setUsers({
-      name: "",
-      email: "",
-      mobile: "",
-      address: "",
-      gender: "",
-      dob: "",
+      name:"",
+      email:"",
+      mobile:"",
+      address:"",
+      gender:"",
+      dob:"",
     });
-  };
+
+    alert("Saved Successfully");
+
+  } catch(err){
+
+    console.log(err);
+
+  }
+
+};
+
+const handleDelete = async (id) =>{
+  const deletes = window.confirm("are you sure delete");
+  if(!deletes) return;
+  
+    try{
+        await deleteDoc(doc(db, "cruds", id));
+        alert("delete succesfully");
+        fetchUsers();  
+    }
+    catch(err) {
+alert("delete failed");
+    }
+  
+}
   return (
-    <div className="container py-4">
+    <div className="">
+    <div className="d-flex">
+      <div style={{width:"20%"}}>
+       <AdminSidebar />
+       </div>
+    <div className="p-4 py-4" style={{width:"80%"}}>
       {/* Form Section */}
       <div className="card shadow-sm mb-4">
-        <div className="card-header bg-primary text-white">  
-          <h4 className="mb-0">Add Record</h4>
+        <div className="card-header  text-white" style={{background:"#3e25c3",padding:"3px"}}>   
+          <h4 className="mb-0" style={{fontSize:"25px"}}>Add Record</h4>
         </div>
 
         <div className="card-body">
@@ -45,6 +104,7 @@ const Cruds = () => {
                   value={users.name}
                   onChange={handleChange}
                   name="name"
+                  required
                 />
               </div>
 
@@ -56,6 +116,7 @@ const Cruds = () => {
                   value={users.email}
                   onChange={handleChange}
                   name="email"
+                  required
                   placeholder="Enter Email"
                 />
               </div>
@@ -66,6 +127,7 @@ const Cruds = () => {
                   type="text"
                   className="form-control"
                   value={users.mobile}
+                  required
                   onChange={handleChange}
                   name="mobile"
                   placeholder="Enter Mobile Number"
@@ -78,6 +140,7 @@ const Cruds = () => {
                   className="form-control"
                   name="address"
                   value={users.address}
+                  required
                   onChange={handleChange}
                   rows="1"
                   placeholder="Enter Address"
@@ -90,7 +153,9 @@ const Cruds = () => {
                   className="form-select"
                   name="gender"
                   value={users.gender}
+                  required
                   onChange={handleChange}
+                  style={{    height: "42px"}}
                 >
                   <option>Select Gender</option>
                   <option>Male</option>
@@ -106,6 +171,7 @@ const Cruds = () => {
                   className="form-control"
                   name="dob"
                   value={users.dob}
+                  required
                   onChange={handleChange}
                 />
               </div>
@@ -121,8 +187,8 @@ const Cruds = () => {
       </div>
 
       <div className="card shadow-sm">
-        <div className="card-header bg-dark text-white">
-          <h4 className="mb-0">Records List</h4>
+        <div className="card-header bg-light text-black">
+          <h4 className="mb-0" style={{fontSize:"25px"}}>Records List</h4>
         </div>
 
         <div className="card-body">
@@ -156,7 +222,7 @@ const Cruds = () => {
                         <button className="btn btn-warning btn-sm me-2">
                           Edit
                         </button>
-                        <button className="btn btn-danger btn-sm">
+                        <button className="btn btn-danger btn-sm" onClick={() =>handleDelete (user.id)}>
                           Delete
                         </button>
                       </td>
@@ -174,6 +240,8 @@ const Cruds = () => {
           </div>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 };

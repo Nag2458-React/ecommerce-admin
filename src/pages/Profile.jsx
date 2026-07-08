@@ -255,7 +255,7 @@ const Profile = () => {
     <>
       <Navbar />
       <div className="container mt-4">
-        <div className="card shadow">
+        <div className="card shadow mb-3">
           <div className="card-body">
             {/* <h2 className="text-center mb-4 fw-bold text-primary">
               👤 My Profile

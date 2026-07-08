@@ -97,12 +97,12 @@ const SystemStatus = () => {
 
   return (
     <div className="d-flex">
-
+           <div style={{width:"20%"}}>
       <AdminSidebar />
-
+</div>
       <div
         className="container-fluid p-4"
-        style={{ background: "#f5f5f5", minHeight: "100vh" }}
+        style={{ background: "#f5f5f5", minHeight: "100vh",width:"80%" }}
       >
 
         <h2 className="fw-bold mb-4">
@@ -237,10 +237,8 @@ const SystemStatus = () => {
               </div>
             </div>
           </div>
-
-        </div>
-
-        <div className="card shadow border-0 mt-3">
+          <div className="col-md-6" style={{textAlign:"left"}}>
+ <div className="card shadow border-0 mt-3">
           <div className="card-header bg-white">
             <h5 className="mb-0">
               Overall Health
@@ -269,6 +267,10 @@ const SystemStatus = () => {
 
           </div>
         </div>
+        </div>
+        </div>
+
+       
 
       </div>
 

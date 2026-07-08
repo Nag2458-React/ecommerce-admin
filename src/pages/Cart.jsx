@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaHome } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
-
+import { FaWhatsapp } from "react-icons/fa";
 const Cart = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
@@ -76,6 +76,31 @@ const Cart = () => {
 
   const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
   window.dispatchEvent(new Event("cartUpdated"));
+
+
+
+  const whatsappNumber = "918008320342"; 
+
+const orderOnWhatsApp = () => {
+  let message = `🛍️ *New Order Request*%0A%0A`;
+
+  cart.forEach((item, index) => {
+    message += `${index + 1}. ${item.productName}%0A`;
+    message += `   Size : ${item.selectedSize}%0A`;
+    message += `   Color : ${item.selectedColor?.name || "Default"}%0A`;
+    message += `   Qty : ${item.qty}%0A`;
+    message += `   Price : ₹${item.discountPrice || item.price}%0A`;
+    message += `   Total : ₹${(item.discountPrice || item.price) * item.qty}%0A%0A`;
+  });
+
+  message += `🧾 Grand Total : ₹${total}%0A%0A`;
+  message += `Please confirm my order.`;
+
+  window.open(
+    `https://wa.me/${whatsappNumber}?text=${message}`,
+    "_blank"
+  );
+};
   return (
     <>
       <Navbar />
@@ -89,7 +114,7 @@ const Cart = () => {
         </div>
 
         {cart.length === 0 ? (
-          <h4 className="text-white">No Products In Cart</h4>
+          <h4 className="text-black">No Products In Cart</h4>
         ) : (
           <div className="row">
             <div className="col-md-8">
@@ -371,6 +396,13 @@ const Cart = () => {
                   >
                     Proceed To Checkout
                   </button>
+                  <button
+  className="btn btn-success w-100 mt-3 d-flex align-items-center justify-content-center gap-2"
+  onClick={orderOnWhatsApp}
+>
+  <FaWhatsapp size={22} />
+  Order on WhatsApp
+</button>
                 </div>
               </div>
             </div>

@@ -57,7 +57,8 @@
 }
 
 body{
-  background:#fff !important;
+  background:url(/public/images/bg11.jpg);
+  background-size:cover;
   font-family:Arial, sans-serif;
   min-height: 100vh;
   flex-direction: column;
@@ -164,7 +165,8 @@ label {
 .products select {
     font-size: 12px;
     font-weight: 500 !important;
-    color: #818181;
+    color: #000;
+    background-color: rgb(216 209 255);
 }
 hr {
     margin: 0rem 0 !important;
@@ -331,3 +333,64 @@ footer {
 li.nav-item .text-danger {
     color: yellow !important;
 }
+.flex-grow-1.p-4.dashboard .card h2 {
+    font-size: 30px;
+}
+@keyframes sizeBlink {
+  0% {
+    box-shadow: 0 0 0px red;
+  }
+  50% {
+    box-shadow: 0 0 20px red;
+  }
+  100% {
+    box-shadow: 0 0 0px red;
+  }
+}
+
+.border-danger.border-3 {
+  animation: sizeBlink 1s infinite;
+  border-radius: 10px;
+}
+
+
+@keyframes cardAnimation {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(.9);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dashboard-card{
+    opacity:0;
+    animation:cardAnimation .7s ease forwards;
+}
+
+.dashboard-card {
+  transition: all 0.3s ease;
+}
+.dashboard-card {
+  overflow: hidden;
+  border-radius: 10px;
+}
+.dashboard-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,.18);
+}
+/* .dashboard-card img {
+  transition: transform 0.4s ease;
+}
+
+.dashboard-card:hover img {
+  transform: scale(1.08);
+} */

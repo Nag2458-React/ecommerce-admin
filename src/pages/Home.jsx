@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { Link, useNavigate } from "react-router-dom";
-
+import { motion } from "framer-motion";
 import {
   FaHeart,
   FaShoppingCart,
@@ -41,12 +41,18 @@ const Home = () => {
   const [wishlist, setWishlist] = useState([]);
 
   const [loading, setLoading] = useState(true);
-
+  const [sizeError, setSizeError] = useState({});
   const handleSizeSelect = (productId, size) => {
     setSelectedSizes({
       ...selectedSizes,
       [productId]: size,
     });
+
+    // Remove highlight after selecting
+    setSizeError((prev) => ({
+      ...prev,
+      [productId]: false,
+    }));
   };
 
   // FETCH PRODUCTS
@@ -93,6 +99,16 @@ const Home = () => {
     if (product.sizes?.length > 0 && !selectedSize) {
       alert("Please Select Size");
 
+      setSizeError((prev) => ({
+        ...prev,
+        [product.id]: true,
+      }));
+
+      document.getElementById(`sizes-${product.id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
       return;
     }
 
@@ -114,9 +130,7 @@ const Home = () => {
     }
 
     localStorage.setItem(`cart_${user}`, JSON.stringify(cart));
-    window.dispatchEvent(
-  new Event("cartUpdated")
-);
+    window.dispatchEvent(new Event("cartUpdated"));
     alert("Added To Cart");
   };
 
@@ -169,6 +183,16 @@ const Home = () => {
     if (product.sizes?.length > 0 && !selectedSize) {
       alert("Please Select Size");
 
+      setSizeError((prev) => ({
+        ...prev,
+        [product.id]: true,
+      }));
+
+      document.getElementById(`sizes-${product.id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
       return;
     }
 
@@ -187,9 +211,7 @@ const Home = () => {
     }
 
     localStorage.setItem(`wishlist_${user}`, JSON.stringify(wishlist));
-    window.dispatchEvent(
-  new Event("wishlistUpdated")
-);
+    window.dispatchEvent(new Event("wishlistUpdated"));
     setWishlist(wishlist.map((item) => item.id));
     setWishlistItems(wishlist);
   };
@@ -228,85 +250,8 @@ const Home = () => {
   return (
     <div className="">
       {/* ================= SIDEBAR ================= */}
-      <div
-
-      // style={{
-      //   width: "240px",
-      //   minHeight: "100vh",
-      //   position: "fixed",
-      // }}
-      >
+      <div>
         <Navbar />
-        {/* <h3 className="text-center mb-4"> PRODUCTS</h3> */}
-
-        {/* <ul className="nav shadow">
-
-          <li className="nav-item m-1">
-            <Link to="/" className="nav-link text-white">
-              <FaHome /> Home
-            </Link>
-          </li>
-
-          <li className="nav-item m-1">
-            <a className="nav-link text-white" href="#">
-              <FaThLarge /> Categories
-            </a>
-          </li>
-
-          <li className="nav-item m-1">
-            <a className="nav-link text-white" href="#">
-              <FaBoxOpen /> Products
-            </a>
-          </li>
-
-          <li className="nav-item m-1">
-            <Link className="nav-link text-white" to="/wishlist">
-              <FaHeart /> Wishlist
-            </Link>
-          </li>
-
-          <li className="nav-item m-1">
-           <Link
-  to="/cart"
-  className="nav-link text-white"
->
-  <FaShoppingCart /> Cart
-</Link>
-          </li>
-<li className="nav-item m-1">
-  <Link
-    to="/myorders"
-    className="nav-link text-white"
-  >
-    <FaClipboardList /> Orders
-  </Link>
-</li>
-          <li className="nav-item m-1">
-            <a className="nav-link text-white" href="#">
-              <FaPhone /> Contact
-            </a>
-          </li>
-    <li className="nav-item m-1">
-  <Link
-    to="/profile"
-    className="nav-link text-white"
-  >
-    <FaUserCircle /> Profile
-  </Link>
-</li>
-          <li className="m-1">
-            {localStorage.getItem("user") ? (
-              <button className="btn btn-info w-100" onClick={handleLogout}>
-                <FaUser /> Logout
-              </button>
-            ) : (
-              <button className="btn btn-primary w-100" onClick={gotoLogin}>
-                <FaUser /> Login
-              </button>
-            )}
-          </li>
-
-        </ul> */}
       </div>
 
       {/* ================= PRODUCTS ================= */}
@@ -319,18 +264,28 @@ const Home = () => {
           {!loading && products.length === 0 && <p>No products found</p>}
 
           <div className="row">
-            {products.map((item) => (
-              <div className="col-md-3 mb-4" key={item.id}>
-                <div
-                  className="card  shadow"
-                  onClick={() =>
-                    navigate(`/product/${item.id}`, {
-                      state: {
-                        selectedColor: selectedColors[item.id],
-                      },
-                    })
-                  }
-                >
+  {products.map((item, index) => (
+    <motion.div
+      key={item.id}
+      className="col-md-3 mb-4"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{
+        duration: 0.5,
+        delay: index * 0.1,
+      }}
+    >
+      <div
+        className="card shadow dashboard-card"
+        onClick={() =>
+          navigate(`/product/${item.id}`, {
+            state: {
+              selectedColor: selectedColors[item.id],
+            },
+          })
+        }
+      >
                   <button
                     className={`btn ${
                       wishlist.includes(item.id)
@@ -353,20 +308,6 @@ const Home = () => {
                   {/* IMAGE SAFE BLOCK */}
 
                   <div style={{ background: "#eee" }}>
-                    {/* <img
-                        src={
-                          item?.imagePath
-                            ? item.imagePath
-                            : "/images/no-image.png"
-                        }
-                        alt={item?.productName || "product"}
-                        style={{
-                          height: "100%",
-                        }}
-                        onError={(e) => {
-                          e.target.src = "/images/no-image.png";
-                        }}
-                      /> */}
                     <img
                       src={selectedColors[item.id]?.image || item.imagePath}
                       alt={item.productName}
@@ -383,20 +324,14 @@ const Home = () => {
                   </div>
 
                   <div className="card-body text-center">
-                   <div className="mb-2">
-  <span className="fw-bold" style={{color:"rgb(62 37 195)"}}>
-    {item.category}
-  </span>
-
-  {/* <div
-    className="mt-1 text-muted"
-    style={{
-      fontSize: "13px",
-    }}
-  >
-    {item.productName}
-  </div> */}
-</div>
+                    <div className="mb-2">
+                      <span
+                        className="fw-bold"
+                        style={{ color: "#000" }}
+                      >
+                        {item.category}
+                      </span>
+                    </div>
                     <p
                       className="text-muted mb-2"
                       style={{
@@ -415,16 +350,28 @@ const Home = () => {
                       <div style={{ width: "48%" }}>
                         {item.sizes?.length > 0 && (
                           <select
-                            className="form-select form-select-sm mb-2"
+                            className={`form-select form-select-sm mb-2 ${
+                              sizeError[item.id]
+                                ? "border border-danger border-3"
+                                : ""
+                            }`}
                             value={selectedSizes[item.id] || ""}
                             disabled={isWishlisted(item.id)}
                             style={{
                               backgroundColor: isWishlisted(item.id)
                                 ? "#f5f5f5"
-                                : "",
+                                : sizeError[item.id]
+                                  ? "#fff5f5"
+                                  : "",
                               cursor: isWishlisted(item.id)
                                 ? "not-allowed"
                                 : "pointer",
+                              boxShadow: sizeError[item.id]
+                                ? "0 0 10px red"
+                                : "none",
+                              animation: sizeError[item.id]
+                                ? "shake 0.4s"
+                                : "none",
                             }}
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) =>
@@ -534,23 +481,16 @@ const Home = () => {
           {item.price - item.discountPrice}
         </span> */}
                         </div>
-                        {/* <p
-  className="mb-2 text-success fw-bold"
-  style={{
-    fontSize: "12px",
-  }}
->
-  🚚 Delivery by {getDeliveryDate(item.id)}
-</p> */}
+
                         <div
                           className="mt-2"
                           style={{
-                            background: "#f1fff4",
+                            background: "#3e25c3",
                             border: "1px solid #d4edda",
                             borderRadius: "6px",
                             padding: "4px",
                             fontSize: "12px",
-                            color: "#198754",
+                            color: "#fff",
                             fontWeight: "600",
                           }}
                         >
@@ -560,203 +500,11 @@ const Home = () => {
                     ) : (
                       <h4 className="text-success mb-2">₹{item.price}</h4>
                     )}
-
-                    {/* <div className="d-flex gap-2">
-
-    <button
-      className="btn btn-primary"
-      style={{ width: "48%" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        addToCart(item);
-      }}
-    >
-      Add To Cart
-    </button>
-
-    <button
-      className="btn btn-success"
-      style={{ width: "48%" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        navigate(`/product/${item.id}`);
-      }}
-    >
-      Buy Now
-    </button>
-
-  </div> */}
                   </div>
-                  {/* BODY */}
-                  {/* <div className="card-body">
-                     <h6 className="fw-bold">
-    {item?.productName}
-  </h6> 
-
-                    <span className="badge bg-primary mb-1">
-                      {item?.category}
-                    </span>
-
-                     <p className="mb-1">
-    <strong>Size:</strong> {item?.size}
-  </p>
-   
-                    <div className=" justify-content-between align-items-start mb-1">
-                      <div>
-                        {item?.discountPrice ? (
-                          <>
-                            <span
-                              className="text-success fw-bold"
-                              style={{ fontSize: "16px" }}
-                            >
-                              <strong style={{ fontSize: "20px" }}>
-                                Price
-                              </strong>{" "}
-                              <span
-                                style={{
-                                  textDecoration: "line-through",
-                                  color: "gray",
-                                  fontSize: "14px",
-                                }}
-                              >
-                                ₹{item?.price}
-                              </span>{" "}
-                              ₹{item?.discountPrice}
-                            </span>
-
-                            <br />
-
-                             <small className="text-success fw-bold">
-          You Save ₹
-          {item?.price - item?.discountPrice}
-        </small> 
-                          </>
-                        ) : (
-                          <span
-                            className="text-success fw-bold"
-                            style={{ fontSize: "16px" }}
-                          >
-                            ₹{item?.price}
-                          </span>
-                        )}
-                      </div>
-
-                      {item?.discountPrice && (
-                        <strong
-                          className=""
-                          style={{
-                            fontSize: "12px",
-                            height: "fit-content",
-                          }}
-                        >
-                          {Math.round(
-                            ((item.price - item.discountPrice) / item.price) *
-                              100,
-                          )}
-                          % OFF
-                        </strong>
-                      )}
-                    </div>
-                    {item?.discountPrice && (
-                      <div
-                        className="alert alert-success py-1 px-2 mt-1"
-                        style={{
-                          fontSize: "12px",
-                        }}
-                      >
-                        🎉 You save ₹{item.price - item.discountPrice} on this
-                        product
-                      </div>
-                    )}
-                    <div className="d-flex">
-                      <select
-                        className="form-select mb-2"
-                        value={selectedSizes[item.id] || ""}
-                        onChange={(e) =>
-                          handleSizeSelect(item.id, e.target.value)
-                        }
-                        style={{ width: "50%" }}
-                      >
-                        <option value="">Select Size</option>
-
-                        {item?.sizes?.map((size) => (
-                          <option key={size} value={size}>
-                            {size}
-                          </option>
-                        ))}
-                      </select>
-                      <p
-                        className="mb-1"
-                        style={{ width: "50%", fontSize: "13px" }}
-                      >
-                        <strong>Color:</strong> {item?.color}
-                      </p>
-                    </div>
-
-                    <p className="mb-1" style={{ fontSize: "13px" }}>
-                      <strong>Material:</strong> {item?.material}
-                    </p>
-                    
-  <p className="mb-1">
-    <strong>Qty:</strong> {item?.quantity}
-  </p> 
-
-                     <p className="mb-1">
-    <strong>Occasion:</strong> {item?.occasion}
-  </p> 
-
-                    <p
-                      className="mb-1"
-                      
-                      style={{ fontSize: "13px" }}
-                    >
-                      <strong>Description:</strong> {item?.description}
-                    </p>
-
-                     <div
-    className="alert alert-light p-2"
-    style={{ fontSize: "12px" }}
-  >
-    <strong>Highlights:</strong>
-    <br />
-    {item?.highlights}
-  </div>
-
-  <div
-    className="alert alert-warning p-2"
-    style={{ fontSize: "12px" }}
-  >
-    <strong>Care:</strong>
-    <br />
-    {item?.careInstructions}
-  </div> 
-                    <div className="d-flex gap-3">
-                      <button
-                        className={`btn btn-sm  ${
-                          wishlist.includes(item.id)
-                            ? "btn-danger"
-                            : "btn-outline-danger"
-                        }`}
-                        onClick={() => toggleWishlist(item)}
-                        style={{ width: "48%" }}
-                      >
-                        ❤️ Wishlist
-                      </button>
-                      <button
-                        className="btn btn-primary   "
-                        onClick={() => addToCart(item)}
-                        style={{ width: "50%" }}
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-
-                    <button className="btn btn-success w-100 mt-2">
-                      Buy Now
-                    </button>
-                  </div> */}
                 </div>
-              </div>
+                 </motion.div>
+             
+             
             ))}
           </div>
         </div>
