@@ -6,6 +6,7 @@ import { FaWhatsapp } from "react-icons/fa";
 const Cart = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+ 
   const [customer, setCustomer] = useState({
   name: "",
   mobile: "",
@@ -13,23 +14,20 @@ const Cart = () => {
   pincode: "",
 });
   const user = localStorage.getItem("currentUser");
-  useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-localStorage.setItem(
-  "customerDetails",
-  JSON.stringify(customer)
-);
+ useEffect(() => {
+  const user = localStorage.getItem("currentUser");
 
-const saved = JSON.parse(localStorage.getItem("customerDetails"));
+  const data = JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
+  setCart(data);
 
-if (saved) {
-  setCustomer(saved);
-}
+  const savedCustomer = JSON.parse(
+    localStorage.getItem("customerDetails")
+  );
 
-    const data = JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
-
-    setCart(data);
-  }, []);
+  if (savedCustomer) {
+    setCustomer(savedCustomer);
+  }
+}, []);
 
   const saveCart = (updated) => {
     setCart(updated);
@@ -83,6 +81,7 @@ if (saved) {
       Number(item.discountPrice || item.price || 0) * Number(item.qty || 1),
     0,
   );
+
   const originalTotal = cart.reduce(
     (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1),
     0,
@@ -91,6 +90,8 @@ if (saved) {
   const totalSavings = originalTotal - total;
 
   const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
+  const deliveryCharge = total >= 1000 ? 0 : 50;
+const grandTotal = total + deliveryCharge;
   window.dispatchEvent(new Event("cartUpdated"));
 
   const handleInput = (e) => {
@@ -100,7 +101,7 @@ if (saved) {
   });
 };
 
-  const whatsappNumber = "918008320342"; 
+ const whatsappNumber = "918008320342";
 
 const orderOnWhatsApp = () => {
   if (
@@ -113,35 +114,81 @@ const orderOnWhatsApp = () => {
     return;
   }
 
-  let message = `🛍️ *New Order Request*\n\n`;
+  // Generate Order ID
+  const orderId =
+    "ORD-" +
+    new Date().getFullYear() +
+    "-" +
+    Math.floor(1000 + Math.random() * 9000);
 
-  message += `👤 Name : ${customer.name}\n`;
-  message += `📱 Mobile : ${customer.mobile}\n`;
-  message += `📍 Address : ${customer.address}\n`;
-  message += `📮 Pincode : ${customer.pincode}\n\n`;
+  let message = `🛍️ *NEW ORDER REQUEST*\n\n`;
 
-  message += `====================\n`;
-  message += `🛒 Products\n`;
-  message += `====================\n\n`;
+  message += `🆔 Order ID : ${orderId}\n\n`;
+
+  message += `👤 Customer Details\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `Name : ${customer.name}\n`;
+  message += `Mobile : ${customer.mobile}\n`;
+  message += `Address : ${customer.address}\n`;
+  message += `Pincode : ${customer.pincode}\n\n`;
+
+  message += `🛒 Ordered Products\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
 
   cart.forEach((item, index) => {
-    message += `${index + 1}. ${item.productName}\n`;
+    const price = Number(item.discountPrice || item.price);
+    const subtotal = price * Number(item.qty);
+
+    message += `📦 Product ${index + 1}\n`;
+    message += `Name : ${item.productName}\n`;
+    message += `Category : ${item.category}\n`;
     message += `Size : ${item.selectedSize}\n`;
     message += `Color : ${item.selectedColor?.name || "Default"}\n`;
     message += `Qty : ${item.qty}\n`;
-    message += `Price : ₹${item.discountPrice || item.price}\n`;
-    message += `Subtotal : ₹${
-      (item.discountPrice || item.price) * item.qty
-    }\n\n`;
+    message += `Price : ₹${price}\n`;
+    message += `Subtotal : ₹${subtotal}\n`;
+
+    // Image URL (Only if public URL)
+    if (item.selectedColor?.image || item.imagePath) {
+      message += `Image : ${
+        item.selectedColor?.image || item.imagePath
+      }\n`;
+    }
+
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
   });
 
-  message += `====================\n`;
-  message += `🧾 Grand Total : ₹${total}`;
+  message += `\n💰 Order Summary\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `Items : ${totalItems}\n`;
+  message += `Subtotal : ₹${total}\n`;
+  message += `Delivery : ${
+    deliveryCharge === 0 ? "FREE 🎉" : `₹${deliveryCharge}`
+  }\n`;
+  message += `Grand Total : ₹${grandTotal}\n\n`;
+
+  message += `🚚 Expected Delivery : 3 - 5 Working Days\n\n`;
+
+  message += `🙏 Please confirm my order. Thank you!`;
 
   window.open(
     `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
     "_blank"
   );
+
+  // Clear Cart
+  saveCart([]);
+
+  // Save Customer Details
+  localStorage.setItem(
+    "customerDetails",
+    JSON.stringify(customer)
+  );
+
+  // Redirect Home
+  setTimeout(() => {
+    navigate("/");
+  }, 1000);
 };
   return (
     <>
@@ -419,13 +466,16 @@ const orderOnWhatsApp = () => {
 
                   <hr />
 
-                  <h3
-                    className="
-        text-primary
-      "
-                  >
-                    Grand Total : ₹{total}
-                  </h3>
+                 <h3 className="text-primary">
+   Grand Total : ₹{grandTotal}
+</h3>
+
+<p>
+  Delivery :
+  <strong className="ms-2">
+    {deliveryCharge === 0 ? "FREE 🎉" : `₹${deliveryCharge}`}
+  </strong>
+</p>
 
                   <button
                     className="
@@ -434,7 +484,7 @@ const orderOnWhatsApp = () => {
         w-100
         mt-3
       "
-                    onClick={() => navigate("/orders")}
+                    // onClick={() => navigate("/orders")}
                   >
                     Proceed To Checkout
                   </button>
