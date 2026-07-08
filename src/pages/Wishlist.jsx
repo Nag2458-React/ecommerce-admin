@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import { useWishlist } from "../context/WishlistContext";
 import {
   FaHeart,
   FaHome,
@@ -12,48 +14,54 @@ import StarRating from "../admin/pages/StarRating";
 
 const Wishlist = () => {
   const navigate = useNavigate();
-useEffect(() => {
-
-  const user =
-    localStorage.getItem("user");
-
-  if (!user) {
-
-    navigate("/login", {
-      replace: true,
-    });
-
-  }
-
-}, []);
-  const [wishlist, setWishlist] = useState([]);
+  const {
+  wishlist,
+  removeFromWishlist,
+} = useWishlist();
+const [wishlistProducts, setWishlistProducts] = useState([]);
 const [selectedColors, setSelectedColors] =  useState({});
-  useEffect(() => {
-  const user =
-  localStorage.getItem(
-    "currentUser"
-  );
+useEffect(() => {
+  const loadWishlistProducts = async () => {
+    try {
+      const products = await Promise.all(
+        wishlist.map(async (item) => {
+          const productRef = doc(db, "products", item.productId);
+          const productSnap = await getDoc(productRef);
 
-const data =
-  JSON.parse(
-    localStorage.getItem(
-      `wishlist_${user}`
-    )
-  ) || [];
+          if (!productSnap.exists()) return null;
 
-setWishlist(data);
+          return {
+            id: productSnap.id,
+            ...productSnap.data(),
+            selectedSize: item.selectedSize,
+            selectedColor: item.selectedColor,
+          };
+        })
+      );
 
-const colorsObj = {};
+      const data = products.filter(Boolean);
 
-data.forEach((item) => {
-  if (item.selectedColor) {
-    colorsObj[item.id] =
-      item.selectedColor;
-  }
-});
+      setWishlistProducts(data);
 
-setSelectedColors(colorsObj);
-  }, []);
+      const colorsObj = {};
+
+      data.forEach((item) => {
+        if (item.selectedColor) {
+          colorsObj[item.id] = item.selectedColor;
+        }
+      });
+
+      setSelectedColors(colorsObj);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadWishlistProducts();
+}, [wishlist]);
+  // const [wishlist, setWishlist] = useState([]);
+  
+
 const addToCart = (product) => {
 
   const user =
@@ -115,28 +123,7 @@ const addToCart = (product) => {
 
   navigate("/cart");
 };
-  const removeItem = (id) => {
-    const updated = wishlist.filter(
-      (item) => item.id !== id
-    );
-
-    setWishlist(updated);
-
-    const user =
-  localStorage.getItem(
-    "currentUser"
-  );
-
-localStorage.setItem(
-  `wishlist_${user}`,
-  JSON.stringify(updated)
-);
-window.dispatchEvent(
-  new Event(
-    "cartUpdated"
-  )
-);
-  };
+  
 
 const handleLogout = () => {
 
@@ -232,7 +219,7 @@ const getDeliveryDate = () => {
           ❤️ My Wishlist
         </h2>
 
-        {wishlist.length === 0 && (
+        {wishlistProducts.length === 0 && (
           <div className="text-center mt-5">
             <h4>No items in wishlist</h4>
 
@@ -247,7 +234,7 @@ const getDeliveryDate = () => {
 
         <div className="row">
 
-          {wishlist.map((item) => (
+          {wishlistProducts.map((item) => (
             <div
               className="col-lg-3 col-md-4 col-sm-6 mb-4"
               key={item.id}
@@ -464,17 +451,16 @@ const getDeliveryDate = () => {
     >
       Add To Cart
     </button>
-
-    <button
-      className="btn btn-danger"
-      style={{ width: "50%" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        removeItem(item.id);
-      }}
-    >
-      Remove
-    </button>
+<button
+  className="btn btn-danger"
+  style={{ width: "50%" }}
+  onClick={async (e) => {
+    e.stopPropagation();
+    await removeFromWishlist(item.id);
+  }}
+>
+  Remove
+</button>
 
   </div>
 

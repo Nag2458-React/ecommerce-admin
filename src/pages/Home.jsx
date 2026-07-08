@@ -15,33 +15,41 @@ import {
   FaClipboardList,
 } from "react-icons/fa";
 import Navbar from "./Navbar";
-
+import { useWishlist } from "../context/WishlistContext";
 const Home = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    // logout ayyaka , back arrow press chesthe back avvakunda ee kinda code use chestam
-    const user = localStorage.getItem("user");
+  // useEffect(() => {
+  //   // logout ayyaka , back arrow press chesthe back avvakunda ee kinda code use chestam
+  //   const user = localStorage.getItem("user");
 
-    if (!user) {
-      navigate("/login", {
-        replace: true,
-      });
-    }
-  }, []);
-  const isWishlisted = (productId) => {
-    return wishlistItems.some((item) => item.id === productId);
-  };
-  const [wishlistItems, setWishlistItems] = useState([]);
+  //   if (!user) {
+  //     navigate("/login", {
+  //       replace: true,
+  //     });
+  //   }
+  // }, []);
+
+  // const isWishlisted = (productId) => {
+  //   return wishlistItems.some((item) => item.id === productId);
+  // };
+  // const [wishlistItems, setWishlistItems] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState({});
 
   const [selectedColors, setSelectedColors] = useState({});
 
   const [products, setProducts] = useState([]);
 
-  const [wishlist, setWishlist] = useState([]);
+  // const [wishlist, setWishlist] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [sizeError, setSizeError] = useState({});
+  const {
+  wishlist,
+  addToWishlist,
+  removeFromWishlist,
+  isInWishlist,
+} = useWishlist();
+
   const handleSizeSelect = (productId, size) => {
     setSelectedSizes({
       ...selectedSizes,
@@ -135,86 +143,38 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+  fetchProducts();
+}, []);
+const toggleWishlist = async (product) => {
+  const selectedSize = selectedSizes[product.id];
 
-    const user = localStorage.getItem("currentUser");
+  if (product.sizes?.length > 0 && !selectedSize) {
+    alert("Please Select Size");
 
-    const savedWishlist =
-      JSON.parse(localStorage.getItem(`wishlist_${user}`)) || [];
+    setSizeError((prev) => ({
+      ...prev,
+      [product.id]: true,
+    }));
 
-    setWishlist(savedWishlist.map((item) => item.id));
-
-    setWishlistItems(savedWishlist);
-
-    // Load Saved Size & Color
-    const savedSizes = {};
-    const savedColors = {};
-
-    savedWishlist.forEach((item) => {
-      if (item.selectedSize) {
-        savedSizes[item.id] = item.selectedSize;
-      }
-
-      if (item.selectedColor) {
-        savedColors[item.id] = item.selectedColor;
-      }
+    document.getElementById(`sizes-${product.id}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
     });
 
-    setSelectedSizes(savedSizes);
+    return;
+  }
 
-    setSelectedColors((prev) => ({
-      ...prev,
-      ...savedColors,
-    }));
-  }, []);
-  const toggleWishlist = (product) => {
-    const user = localStorage.getItem("currentUser");
-
-    if (!user) {
-      alert("Please Login");
-
-      navigate("/login");
-
-      return;
-    }
-
-    const selectedSize = selectedSizes[product.id];
-
-    if (product.sizes?.length > 0 && !selectedSize) {
-      alert("Please Select Size");
-
-      setSizeError((prev) => ({
-        ...prev,
-        [product.id]: true,
-      }));
-
-      document.getElementById(`sizes-${product.id}`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-
-      return;
-    }
-
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user}`)) || [];
-
-    const exists = wishlist.find((item) => item.id === product.id);
-
-    if (exists) {
-      wishlist = wishlist.filter((item) => item.id !== product.id);
-    } else {
-      wishlist.push({
-        ...product,
-        selectedSize,
-        selectedColor: selectedColors[product.id] || null,
-      });
-    }
-
-    localStorage.setItem(`wishlist_${user}`, JSON.stringify(wishlist));
-    window.dispatchEvent(new Event("wishlistUpdated"));
-    setWishlist(wishlist.map((item) => item.id));
-    setWishlistItems(wishlist);
-  };
+  if (isInWishlist(product.id)) {
+    await removeFromWishlist(product.id);
+  } else {
+    await addToWishlist(
+      product,
+      selectedSize || "",
+      selectedColors[product.id] || ""
+    );
+    console.log("Wishlist Added");
+  }
+};
 
   const gotoLogin = () => {
     navigate("/login");
@@ -286,25 +246,25 @@ const Home = () => {
           })
         }
       >
-                  <button
-                    className={`btn ${
-                      wishlist.includes(item.id)
-                        ? "btn-danger"
-                        : "btn-outline-danger"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleWishlist(item);
-                    }}
-                    style={{
-                      width: "12%",
-                      position: "absolute",
-                      right: "0",
-                      margin: "15px",
-                    }}
-                  >
-                    ❤️
-                  </button>
+             <button
+  className={`btn ${
+    isInWishlist(item.id)
+      ? "btn-danger"
+      : "btn-outline-danger"
+  }`}
+  onClick={(e) => {
+    e.stopPropagation();
+    toggleWishlist(item);
+  }}
+  style={{
+    width: "12%",
+    position: "absolute",
+    right: "0",
+    margin: "15px",
+  }}
+>
+  ❤️
+</button>
                   {/* IMAGE SAFE BLOCK */}
 
                   <div style={{ background: "#eee" }}>
@@ -356,14 +316,14 @@ const Home = () => {
                                 : ""
                             }`}
                             value={selectedSizes[item.id] || ""}
-                            disabled={isWishlisted(item.id)}
+                            disabled={isInWishlist(item.id)}
                             style={{
-                              backgroundColor: isWishlisted(item.id)
+                              backgroundColor: isInWishlist(item.id)
                                 ? "#f5f5f5"
                                 : sizeError[item.id]
                                   ? "#fff5f5"
                                   : "",
-                              cursor: isWishlisted(item.id)
+                              cursor: isInWishlist(item.id)
                                 ? "not-allowed"
                                 : "pointer",
                               boxShadow: sizeError[item.id]
@@ -397,12 +357,12 @@ const Home = () => {
                             <select
                               className="form-select form-select-sm"
                               value={selectedColors[item.id]?.name || ""}
-                              disabled={isWishlisted(item.id)}
+                              disabled={isInWishlist(item.id)}
                               style={{
-                                backgroundColor: isWishlisted(item.id)
+                                backgroundColor: isInWishlist(item.id)
                                   ? "#f5f5f5"
                                   : "",
-                                cursor: isWishlisted(item.id)
+                                cursor: isInWishlist(item.id)
                                   ? "not-allowed"
                                   : "pointer",
                               }}

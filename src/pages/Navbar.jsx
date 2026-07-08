@@ -26,7 +26,7 @@ import {
   FaClipboardList,
   FaSignOutAlt,
 } from "react-icons/fa";
-
+import { useWishlist } from "../context/WishlistContext";
 const Navbar = () => {
 
   const navigate =
@@ -36,66 +36,39 @@ const Navbar = () => {
     localStorage.getItem(
       "currentUser"
     );
-
+const {
+  wishlist,
+} = useWishlist();
   const [cartCount,
     setCartCount] =    useState(0);
 const [wishlistCount,
   setWishlistCount] =  useState(0);
  useEffect(() => {
-  const loadCounts = () => {
+  const loadCart = () => {
     const cart =
       JSON.parse(
-        localStorage.getItem(
-          `cart_${user}`
-        )
+        localStorage.getItem(`cart_${user}`)
       ) || [];
 
-    const totalQty =
-      cart.reduce(
-        (sum, item) =>
-          sum +
-          Number(item.qty || 1),
-        0
-      );
+    const totalQty = cart.reduce(
+      (sum, item) => sum + Number(item.qty || 1),
+      0
+    );
 
     setCartCount(totalQty);
-
-    const wishlist =
-      JSON.parse(
-        localStorage.getItem(
-          `wishlist_${user}`
-        )
-      ) || [];
-
-    setWishlistCount(
-      wishlist.length
-    );
   };
 
-  loadCounts();
+  loadCart();
 
-  window.addEventListener(
-    "cartUpdated",
-    loadCounts
-  );
-
-  window.addEventListener(
-    "wishlistUpdated",
-    loadCounts
-  );
+  window.addEventListener("cartUpdated", loadCart);
 
   return () => {
-    window.removeEventListener(
-      "cartUpdated",
-      loadCounts
-    );
-
-    window.removeEventListener(
-      "wishlistUpdated",
-      loadCounts
-    );
+    window.removeEventListener("cartUpdated", loadCart);
   };
 }, [user]);
+useEffect(() => {
+  setWishlistCount(wishlist.length);
+}, [wishlist]);
 
 const handleLogout = async () => {
   try {

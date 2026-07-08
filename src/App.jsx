@@ -29,8 +29,10 @@ import TopSellingProducts from "./admin/pages/TopSellingProducts";
 import RecentProducts from "./admin/pages/RecentProducts";
 import Footer from "./pages/Footer";
 import SystemStatus from "./admin/pages/SystemStatus";
+import { WishlistProvider } from "./context/WishlistContext";
 const App = () => {
   return (
+     <WishlistProvider>
     <BrowserRouter>
       <div className="main flex-grow-1">
         <SessionManager />
@@ -87,6 +89,7 @@ const App = () => {
       </div>
       <Footer />
     </BrowserRouter>
+    </WishlistProvider>
   );
 };
 
