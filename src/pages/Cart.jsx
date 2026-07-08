@@ -150,9 +150,9 @@ const orderOnWhatsApp = () => {
 
     // Image URL (Only if public URL)
     if (item.selectedColor?.image || item.imagePath) {
-      message += `Image : ${
-        item.selectedColor?.image || item.imagePath
-      }\n`;
+      // message += `Image : ${
+      //   item.selectedColor?.image || item.imagePath
+      // }\n`;
     }
 
     message += `━━━━━━━━━━━━━━━━━━━━\n`;
