@@ -6,9 +6,25 @@ import { FaWhatsapp } from "react-icons/fa";
 const Cart = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+  const [customer, setCustomer] = useState({
+  name: "",
+  mobile: "",
+  address: "",
+  pincode: "",
+});
   const user = localStorage.getItem("currentUser");
   useEffect(() => {
     const user = localStorage.getItem("currentUser");
+localStorage.setItem(
+  "customerDetails",
+  JSON.stringify(customer)
+);
+
+const saved = JSON.parse(localStorage.getItem("customerDetails"));
+
+if (saved) {
+  setCustomer(saved);
+}
 
     const data = JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
 
@@ -77,27 +93,53 @@ const Cart = () => {
   const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
   window.dispatchEvent(new Event("cartUpdated"));
 
-
+  const handleInput = (e) => {
+  setCustomer({
+    ...customer,
+    [e.target.name]: e.target.value,
+  });
+};
 
   const whatsappNumber = "918008320342"; 
 
 const orderOnWhatsApp = () => {
-  let message = `🛍️ *New Order Request*%0A%0A`;
+  if (
+    !customer.name ||
+    !customer.mobile ||
+    !customer.address ||
+    !customer.pincode
+  ) {
+    alert("Please fill all customer details.");
+    return;
+  }
+
+  let message = `🛍️ *New Order Request*\n\n`;
+
+  message += `👤 Name : ${customer.name}\n`;
+  message += `📱 Mobile : ${customer.mobile}\n`;
+  message += `📍 Address : ${customer.address}\n`;
+  message += `📮 Pincode : ${customer.pincode}\n\n`;
+
+  message += `====================\n`;
+  message += `🛒 Products\n`;
+  message += `====================\n\n`;
 
   cart.forEach((item, index) => {
-    message += `${index + 1}. ${item.productName}%0A`;
-    message += `   Size : ${item.selectedSize}%0A`;
-    message += `   Color : ${item.selectedColor?.name || "Default"}%0A`;
-    message += `   Qty : ${item.qty}%0A`;
-    message += `   Price : ₹${item.discountPrice || item.price}%0A`;
-    message += `   Total : ₹${(item.discountPrice || item.price) * item.qty}%0A%0A`;
+    message += `${index + 1}. ${item.productName}\n`;
+    message += `Size : ${item.selectedSize}\n`;
+    message += `Color : ${item.selectedColor?.name || "Default"}\n`;
+    message += `Qty : ${item.qty}\n`;
+    message += `Price : ₹${item.discountPrice || item.price}\n`;
+    message += `Subtotal : ₹${
+      (item.discountPrice || item.price) * item.qty
+    }\n\n`;
   });
 
-  message += `🧾 Grand Total : ₹${total}%0A%0A`;
-  message += `Please confirm my order.`;
+  message += `====================\n`;
+  message += `🧾 Grand Total : ₹${total}`;
 
   window.open(
-    `https://wa.me/${whatsappNumber}?text=${message}`,
+    `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
     "_blank"
   );
 };
@@ -396,16 +438,111 @@ const orderOnWhatsApp = () => {
                   >
                     Proceed To Checkout
                   </button>
-                  <button
-  className="btn btn-success w-100 mt-3 d-flex align-items-center justify-content-center gap-2"
-  onClick={orderOnWhatsApp}
+                <button
+  className="btn btn-success w-100 mt-3"
+  data-bs-toggle="modal"
+  data-bs-target="#orderModal"
 >
-  <FaWhatsapp size={22} />
+  <FaWhatsapp className="me-2" />
   Order on WhatsApp
 </button>
                 </div>
               </div>
             </div>
+
+
+          <div
+  className="modal fade"
+  id="orderModal"
+  tabIndex="-1"
+  aria-hidden="true"
+>
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content">
+
+      <div className="modal-header">
+        <h5 className="modal-title">
+          Customer Details
+        </h5>
+
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+
+      <div className="modal-body">
+
+        <div className="mb-3">
+          <label>Name</label>
+          <input
+            type="text"
+            className="form-control"
+            name="name"
+            value={customer.name}
+            onChange={handleInput}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Mobile Number</label>
+          <input
+            type="tel"
+            className="form-control"
+            name="mobile"
+            value={customer.mobile}
+            onChange={handleInput}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Delivery Address</label>
+          <textarea
+            className="form-control"
+            rows="3"
+            name="address"
+            value={customer.address}
+            onChange={handleInput}
+          ></textarea>
+        </div>
+
+        <div className="mb-3">
+          <label>Pincode</label>
+          <input
+            type="text"
+            className="form-control"
+            name="pincode"
+            value={customer.pincode}
+            onChange={handleInput}
+          />
+        </div>
+
+      </div>
+
+      <div className="modal-footer">
+
+        <button
+          className="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancel
+        </button>
+
+        <button
+          className="btn btn-success"
+          onClick={orderOnWhatsApp}
+        >
+          <FaWhatsapp className="me-2" />
+          Send Order
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
           </div>
         )}
       </div>
