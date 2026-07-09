@@ -27,6 +27,7 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 const Navbar = () => {
 
   const navigate =
@@ -39,33 +40,19 @@ const Navbar = () => {
 const {
   wishlist,
 } = useWishlist();
+const { cart } = useCart();
   const [cartCount,
     setCartCount] =    useState(0);
 const [wishlistCount,
   setWishlistCount] =  useState(0);
- useEffect(() => {
-  const loadCart = () => {
-    const cart =
-      JSON.parse(
-        localStorage.getItem(`cart_${user}`)
-      ) || [];
+useEffect(() => {
+  const totalQty = cart.reduce(
+    (sum, item) => sum + Number(item.qty || 1),
+    0
+  );
 
-    const totalQty = cart.reduce(
-      (sum, item) => sum + Number(item.qty || 1),
-      0
-    );
-
-    setCartCount(totalQty);
-  };
-
-  loadCart();
-
-  window.addEventListener("cartUpdated", loadCart);
-
-  return () => {
-    window.removeEventListener("cartUpdated", loadCart);
-  };
-}, [user]);
+  setCartCount(totalQty);
+}, [cart]);
 useEffect(() => {
   setWishlistCount(wishlist.length);
 }, [wishlist]);

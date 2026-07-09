@@ -30,9 +30,14 @@ import RecentProducts from "./admin/pages/RecentProducts";
 import Footer from "./pages/Footer";
 import SystemStatus from "./admin/pages/SystemStatus";
 import { WishlistProvider } from "./context/WishlistContext";
+import { CartProvider } from "./context/CartContext";
+import WhatsappOrder from "./pages/WhatsappOrder";
+
+
 const App = () => {
   return (
      <WishlistProvider>
+       <CartProvider>
     <BrowserRouter>
       <div className="main flex-grow-1">
         <SessionManager />
@@ -50,6 +55,10 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/products" element={<Products />} />
           <Route path="/view-products" element={<ViewProducts />} />
+          <Route
+  path="/whatsapp-order"
+  element={<WhatsappOrder />}
+/>
           <Route
             path="/cart"
             element={
@@ -89,6 +98,7 @@ const App = () => {
       </div>
       <Footer />
     </BrowserRouter>
+    </CartProvider>
     </WishlistProvider>
   );
 };

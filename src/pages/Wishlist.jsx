@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 import {
   FaHeart,
   FaHome,
@@ -30,12 +31,13 @@ useEffect(() => {
 
           if (!productSnap.exists()) return null;
 
-          return {
-            id: productSnap.id,
-            ...productSnap.data(),
-            selectedSize: item.selectedSize,
-            selectedColor: item.selectedColor,
-          };
+      return {
+ wishlistId:item.id,
+ id: productSnap.id,
+ ...productSnap.data(),
+ selectedSize:item.selectedSize,
+ selectedColor:item.selectedColor,
+};
         })
       );
 
@@ -45,84 +47,39 @@ useEffect(() => {
 
       const colorsObj = {};
 
-      data.forEach((item) => {
-        if (item.selectedColor) {
-          colorsObj[item.id] = item.selectedColor;
-        }
-      });
+data.forEach((item) => {
 
-      setSelectedColors(colorsObj);
+  if(item.selectedColor){
+
+    const matchedColor =
+      item.colors?.find(
+        (c)=>
+          c.name === item.selectedColor.name
+      );
+
+
+    colorsObj[item.id] =
+      matchedColor || item.selectedColor;
+
+  }
+
+});
+
+
+setSelectedColors(colorsObj);
     } catch (err) {
       console.error(err);
     }
   };
 
   loadWishlistProducts();
+   console.log("WISHLIST DATA", wishlist);
+  console.log("WISHLIST PRODUCTS", wishlistProducts);
 }, [wishlist]);
   // const [wishlist, setWishlist] = useState([]);
-  
+  const { addToCart } = useCart();
 
-const addToCart = (product) => {
 
-  const user =
-    localStorage.getItem(
-      "currentUser"
-    );
-
-  let cart =
-    JSON.parse(
-      localStorage.getItem(
-        `cart_${user}`
-      )
-    ) || [];
-
-  const currentColor =
-    selectedColors[product.id];
-
-  const productToCart = {
-    ...product,
-
-    imagePath:
-      currentColor?.image ||
-      product.imagePath,
-
-    selectedColor:
-      currentColor || null,
-
-    qty: 1,
-  };
-
-  const exists = cart.find(
-    (item) =>
-      item.id === product.id &&
-      item.selectedSize ===
-        product.selectedSize
-  );
-
-  if (exists) {
-
-    exists.qty += 1;
-
-    exists.imagePath =
-      currentColor?.image ||
-      exists.imagePath;
-
-    exists.selectedColor =
-      currentColor || null;
-
-  } else {
-
-    cart.push(productToCart);
-
-  }
-
-  localStorage.setItem(
-    `cart_${user}`,
-    JSON.stringify(cart)
-  );
-
-  navigate("/cart");
-};
   
 
 const handleLogout = () => {
@@ -237,7 +194,7 @@ const getDeliveryDate = () => {
           {wishlistProducts.map((item) => (
             <div
               className="col-lg-3 col-md-4 col-sm-6 mb-4"
-              key={item.id}
+              key={`${item.id}-${item.selectedSize}-${item.selectedColor?.name}`}
             >
              <div
   className="card  shadow"
@@ -256,21 +213,20 @@ const getDeliveryDate = () => {
 }
 >
 <img
-  key={selectedColors[item.id]?.image}
-  src={
-    selectedColors[item.id]?.image ||
-    item.selectedColor?.image ||
-    item.imagePath
-  }
-  alt={item.productName}
-  style={{
-    height: "150px",
-    width: "100%",
-    objectFit: "cover",
-  }}
-  onError={(e) => {
-    e.target.src = "/images/no-image.png";
-  }}
+src={
+  selectedColors[item.id]?.image ||
+  item.selectedColor?.image ||
+  item.imagePath
+}
+alt={item.productName}
+style={{
+ height:"150px",
+ width:"100%",
+ objectFit:"cover",
+}}
+onError={(e)=>{
+ e.target.src="/images/no-image.png";
+}}
 />
 
              <div className="card-body text-center">
@@ -313,10 +269,10 @@ const getDeliveryDate = () => {
               c.name === e.target.value
           );
 
-        setSelectedColors({
-          ...selectedColors,
-          [item.id]: colorObj,
-        });
+     setSelectedColors(prev=>({
+ ...prev,
+ [item.id]:colorObj
+}));
       }}
     >
       {item.colors.map((color) => (
@@ -441,22 +397,38 @@ const getDeliveryDate = () => {
 
   <div className="d-flex gap-2 mt-3">
 
-    <button
-      className="btn btn-primary"
-      style={{ width: "50%" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        addToCart(item);
-      }}
-    >
-      Add To Cart
-    </button>
+   <button
+  className="btn btn-primary"
+  style={{ width: "50%" }}
+  onClick={(e) => {
+    e.stopPropagation();
+
+    addToCart(
+      {
+        ...item,
+        selectedSize: item.selectedSize,
+        selectedColor: selectedColors[item.id],
+      },
+      item.selectedSize,
+      selectedColors[item.id]
+    );
+  }}
+>
+  Add To Cart
+</button>
 <button
   className="btn btn-danger"
   style={{ width: "50%" }}
   onClick={async (e) => {
+
     e.stopPropagation();
-    await removeFromWishlist(item.id);
+
+    await removeFromWishlist(
+      item.id,
+      item.selectedSize,
+      selectedColors[item.id]?.name
+    );
+
   }}
 >
   Remove

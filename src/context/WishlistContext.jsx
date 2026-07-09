@@ -4,7 +4,9 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
 import { auth } from "../firebase/firebase";
+
 import {
   addWishlistItem,
   getWishlist,
@@ -14,103 +16,225 @@ import {
 const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
+
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load Wishlist
-const loadWishlist = async () => {
-  const user = auth.currentUser;
 
-  console.log("Current User:", user);
+  // ================= LOAD =================
 
-  if (!user) {
-    setWishlist([]);
-    setLoading(false);
-    return;
-  }
+  const loadWishlist = async () => {
 
-  try {
-    const data = await getWishlist(user.uid);
-
-    console.log("Wishlist Data:", data);
-
-    setWishlist(data);
-  } catch (error) {
-    console.error("Wishlist Load Error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(() => {
-      loadWishlist();
-    });
-
-    return unsubscribe;
-  }, []);
-
-  // Add Item
-  const addToWishlist = async (
-    product,
-    selectedSize = "",
-    selectedColor = ""
-  ) => {
     const user = auth.currentUser;
 
     if (!user) {
-      alert("Please login first");
+      setWishlist([]);
+      setLoading(false);
       return;
     }
 
-    const alreadyExists = wishlist.some(
-      (item) => item.productId === product.id
+
+    try {
+
+      const data = await getWishlist(user.uid);
+
+
+      // REMOVE DUPLICATES
+      const uniqueData = data.filter(
+        (item,index,self)=>
+          index === self.findIndex(
+            (x)=>
+              x.productId === item.productId &&
+              x.selectedSize === item.selectedSize &&
+              x.selectedColor?.name === item.selectedColor?.name
+          )
+      );
+
+
+      setWishlist(uniqueData);
+
+
+    } catch(err){
+
+      console.log(err);
+
+    }
+    finally{
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+
+  useEffect(()=>{
+
+    const unsubscribe =
+      auth.onAuthStateChanged(()=>{
+
+        loadWishlist();
+
+      });
+
+
+    return unsubscribe;
+
+  },[]);
+
+
+
+
+  // ================= ADD =================
+
+
+  const addToWishlist = async (
+    product,
+    selectedSize,
+    selectedColor
+  )=>{
+
+
+    const user = auth.currentUser;
+
+
+    if(!user){
+
+      alert("Please Login First");
+      return;
+
+    }
+
+
+
+    // CHECK DUPLICATE HERE
+
+    const exists = wishlist.some(
+      (item)=>
+        item.productId === product.id &&
+        item.selectedSize === selectedSize &&
+        item.selectedColor?.name === selectedColor?.name
     );
 
-    if (alreadyExists) return;
+
+
+    if(exists){
+
+      alert("Already in wishlist");
+      return;
+
+    }
+
+
 
     await addWishlistItem(
       user.uid,
-      product.id,
+      product,
       selectedSize,
       selectedColor
     );
 
+
     await loadWishlist();
+
+
   };
 
-  // Remove Item
-  const removeFromWishlist = async (productId) => {
+
+
+
+
+  // ================= REMOVE =================
+
+
+  const removeFromWishlist = async (
+    productId,
+    selectedSize,
+    selectedColor
+  )=>{
+
+
     const user = auth.currentUser;
 
-    if (!user) return;
 
-    await removeWishlistItem(user.uid, productId);
+    if(!user) return;
+
+
+
+    await removeWishlistItem(
+      user.uid,
+      productId,
+      selectedSize,
+      selectedColor
+    );
+
 
     await loadWishlist();
+
   };
 
-  // Check Exists
-  const isInWishlist = (productId) => {
+
+
+
+
+  // ================= CHECK =================
+
+
+  const isWishlisted = (
+    productId,
+    selectedSize,
+    selectedColor
+  )=>{
+
+
     return wishlist.some(
-      (item) => item.productId === productId
+
+      (item)=>
+
+      item.productId === productId &&
+      item.selectedSize === selectedSize &&
+      item.selectedColor?.name === selectedColor
+
     );
+
+
   };
+
+
+
+
 
   return (
+
     <WishlistContext.Provider
+
       value={{
+
         wishlist,
         loading,
-        addToWishlist,
-        removeFromWishlist,
-        isInWishlist,
+
         loadWishlist,
+
+        addToWishlist,
+
+        removeFromWishlist,
+
+        isWishlisted
+
       }}
+
     >
+
       {children}
+
     </WishlistContext.Provider>
+
   );
+
 };
 
-export const useWishlist = () => useContext(WishlistContext);
+
+
+export const useWishlist = () =>
+  useContext(WishlistContext);
