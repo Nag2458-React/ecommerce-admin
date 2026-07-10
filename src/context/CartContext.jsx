@@ -1,9 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { auth } from "../firebase/firebase";
 
@@ -47,34 +42,30 @@ export const CartProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-const addToCart = async (
-  product,
-  selectedSize = "",
-  selectedColor = null
-) => {
-  const user = auth.currentUser;
-
-  if (!user) {
-    alert("Please Login First");
-    return;
-  }
-
-  await addCartItem(
-    user.uid,
+  const addToCart = async (
     product,
-    selectedSize,
-    selectedColor
-  );
+    selectedSize = "",
+    selectedColor = null,
+  ) => {
+    const user = auth.currentUser;
 
-  await loadCart();
-};
+    if (!user) {
+      alert("Please Login First");
+      return;
+    }
 
-  const removeFromCart = async (productId) => {
+    await addCartItem(user.uid, product, selectedSize, selectedColor);
+
+    await loadCart();
+  };
+
+  const removeFromCart = async (productId, selectedSize, selectedColor) => {
     const user = auth.currentUser;
 
     if (!user) return;
 
-    await removeCartItem(user.uid, productId);
+    await removeCartItem(user.uid, productId, selectedSize, selectedColor);
+
     await loadCart();
   };
 

@@ -80,12 +80,21 @@ export const addCartItem = async (
 // Remove Item
 export const removeCartItem = async (
   uid,
-  productId
+  productId,
+  selectedSize,
+  selectedColor
 ) => {
+
   const q = query(
     collection(db, "cart"),
     where("uid", "==", uid),
-    where("productId", "==", productId)
+    where("productId", "==", productId),
+    where("selectedSize", "==", selectedSize || ""),
+    where(
+      "selectedColor.name",
+      "==",
+      selectedColor || ""
+    )
   );
 
   const snapshot = await getDocs(q);
@@ -94,7 +103,6 @@ export const removeCartItem = async (
     await deleteDoc(doc(db, "cart", item.id));
   }
 };
-
 // Update Qty
 export const updateCartQty = async (
   cartId,

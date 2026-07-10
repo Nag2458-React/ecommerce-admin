@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React from "react";
 import { FaHome } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
@@ -7,31 +7,23 @@ import { useCart } from "../context/CartContext";
 const Cart = () => {
   const navigate = useNavigate();
   // const [cart, setCart] = useState([]);
- const {
-  cart,
-  loading,
-  removeFromCart,
-  changeQty,
-} = useCart();
-//   const [customer, setCustomer] = useState({
-//   name: "",
-//   mobile: "",
-//   address: "",
-//   pincode: "",
-// });
+  const { cart, removeFromCart, changeQty } = useCart();
+  //   const [customer, setCustomer] = useState({
+  //   name: "",
+  //   mobile: "",
+  //   address: "",
+  //   pincode: "",
+  // });
   const user = localStorage.getItem("currentUser");
-// useEffect(() => {
-//   const savedCustomer = JSON.parse(
-//     localStorage.getItem("customerDetails")
-//   );
+  // useEffect(() => {
+  //   const savedCustomer = JSON.parse(
+  //     localStorage.getItem("customerDetails")
+  //   );
 
-//   if (savedCustomer) {
-//     setCustomer(savedCustomer);
-//   }
-// }, []);
-
-
-
+  //   if (savedCustomer) {
+  //     setCustomer(savedCustomer);
+  //   }
+  // }, []);
 
   const total = cart.reduce(
     (sum, item) =>
@@ -39,7 +31,19 @@ const Cart = () => {
       Number(item.discountPrice || item.price || 0) * Number(item.qty || 1),
     0,
   );
+  const getDeliveryDate = () => {
+    const date = new Date();
 
+    const random = Math.floor(Math.random() * 3) + 3;
+
+    date.setDate(date.getDate() + random);
+
+    return date.toLocaleDateString("en-IN", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    });
+  };
   const originalTotal = cart.reduce(
     (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1),
     0,
@@ -49,20 +53,20 @@ const Cart = () => {
 
   const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
   const deliveryCharge = total >= 1000 ? 0 : 50;
-const grandTotal = total + deliveryCharge;
+  const grandTotal = total + deliveryCharge;
   window.dispatchEvent(new Event("cartUpdated"));
 
-//   const handleInput = (e) => {
-//   setCustomer({
-//     ...customer,
-//     [e.target.name]: e.target.value,
-//   });
-// };
-
+  //   const handleInput = (e) => {
+  //   setCustomer({
+  //     ...customer,
+  //     [e.target.name]: e.target.value,
+  //   });
+  // };
 
   return (
     <>
       <Navbar />
+
       <div className="container mt-4 cart">
         <div className="d-flex justify-content-between mb-4">
           <h2 className="text-black">Shopping Cart</h2>
@@ -79,11 +83,8 @@ const grandTotal = total + deliveryCharge;
             <div className="col-md-8">
               <div className="row">
                 {cart.map((item) => (
-                  <div className="col-md-4">
-                    <div
-                      className="card mb-3"
-                      key={item.id + item.selectedSize}
-                    >
+                  <div className="col-md-4" key={item.id}>
+                    <div className="card mb-3">
                       <div className="row g-0">
                         <div style={{ height: "200px" }}>
                           <img
@@ -116,7 +117,7 @@ const grandTotal = total + deliveryCharge;
                             <strong>Color :</strong>{" "}
                             {item.selectedColor?.name || "Default"}
                           </p>
-                          {item.colors?.length > 0 && (
+                          {/* {item.colors?.length > 0 && (
                             <div className="d-flex gap-2 mb-2">
                               {item.colors.map((color, index) => (
                                 <div
@@ -155,7 +156,7 @@ const grandTotal = total + deliveryCharge;
                                 />
                               ))}
                             </div>
-                          )}
+                          )} */}
                           <p>
                             <strong>Material :</strong> {item.material}
                           </p>
@@ -251,9 +252,11 @@ const grandTotal = total + deliveryCharge;
                           >
                             <button
                               className="btn btn-danger"
-                             onClick={() =>
-  changeQty(item.id, item.qty - 1)
-}
+                              onClick={() => {
+                                if (item.qty > 1) {
+                                  changeQty(item.id, item.qty - 1);
+                                }
+                              }}
                             >
                               -
                             </button>
@@ -270,9 +273,7 @@ const grandTotal = total + deliveryCharge;
                             <button
                               className="btn btn-success"
                               disabled={item.qty >= item.stock}
-                             onClick={() =>
-  changeQty(item.id, item.qty + 1)
-}
+                              onClick={() => changeQty(item.id, item.qty + 1)}
                             >
                               +
                             </button>
@@ -296,7 +297,13 @@ const grandTotal = total + deliveryCharge;
       btn-outline-danger
       w-100
     "
-                           onClick={() => removeFromCart(item.productId)}
+                            onClick={() =>
+                              removeFromCart(
+                                item.productId,
+                                item.selectedSize,
+                                item.selectedColor?.name,
+                              )
+                            }
                           >
                             Remove
                           </button>
@@ -334,47 +341,90 @@ const grandTotal = total + deliveryCharge;
 
                   <hr />
 
-                 <h3 className="text-primary">
-   Grand Total : ₹{grandTotal}
-</h3>
+                  <h3 className="text-primary">Grand Total : ₹{grandTotal}</h3>
 
-<p>
-  Delivery :
-  <strong className="ms-2">
-    {deliveryCharge === 0 ? "FREE 🎉" : `₹${deliveryCharge}`}
-  </strong>
-</p>
+                  <p>
+                    Delivery :
+                    <strong className="ms-2">
+                      {deliveryCharge === 0 ? "FREE 🎉" : `₹${deliveryCharge}`}
+                    </strong>
+                  </p>
+                  <hr />
 
+                  <div
+                    className="p-3 rounded mb-3"
+                    style={{
+                      background: "#fff8e1",
+                      border: "1px dashed #f0ad4e",
+                    }}
+                  >
+                    <h6 className="fw-bold text-dark mb-2">
+                      🏷 Available Coupons
+                    </h6>
+
+                    <div className="small mb-2">
+                      <span className="badge bg-success me-2">WELCOME10</span>
+                      Get <b>10% OFF</b> (Max ₹200)
+                    </div>
+
+                    <div className="small mb-2">
+                      <span className="badge bg-primary me-2">SAVE100</span>
+                      Flat <b>₹100 OFF</b> on orders above ₹999
+                    </div>
+
+                    <div className="small">
+                      <span className="badge bg-danger me-2">BANGLE50</span>
+                      Flat <b>₹50 OFF</b> on orders above ₹499
+                    </div>
+
+                    <small className="text-muted d-block mt-2">
+                      Coupons can be applied during Checkout.
+                    </small>
+                  </div>
+
+                  <div
+                    className="alert alert-success mb-3"
+                    style={{
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <div className="fw-bold">🚚 Expected Delivery</div>
+
+                    <div>
+                      <strong>{getDeliveryDate()}</strong>
+                    </div>
+
+                    <small>Delivery in 3 - 5 business days</small>
+                  </div>
                   <button
-                    className="
-        btn
-        btn-success
-        w-100
-        mt-3
-      "
-                    // onClick={() => navigate("/orders")}
+                    className="btn btn-success w-100 mt-3"
+                    onClick={() => {
+                      if (cart.length === 0) {
+                        alert("Your cart is empty");
+                        return;
+                      }
+
+                      navigate("/orders");
+                    }}
                   >
                     Proceed To Checkout
                   </button>
-             <button
-  className="btn btn-success w-100 mt-3"
-  onClick={() =>
-    navigate("/whatsapp-order", {
-      state: {
-        cart,
-      },
-    })
-  }
->
-  <FaWhatsapp className="me-2" />
-  Order on WhatsApp
-</button>
+                  <button
+                    className="btn btn-success w-100 mt-3"
+                    onClick={() =>
+                      navigate("/whatsapp-order", {
+                        state: {
+                          cart,
+                        },
+                      })
+                    }
+                  >
+                    <FaWhatsapp className="me-2" />
+                    Order on WhatsApp
+                  </button>
                 </div>
               </div>
             </div>
-
-
-        
           </div>
         )}
       </div>

@@ -45,24 +45,17 @@ useEffect(() => {
 
       setWishlistProducts(data);
 
-      const colorsObj = {};
+     const colorsObj = {};
 
 data.forEach((item) => {
+  if (item.selectedColor) {
+    const matchedColor = item.colors?.find(
+      (c) => c.name === item.selectedColor.name
+    );
 
-  if(item.selectedColor){
-
-    const matchedColor =
-      item.colors?.find(
-        (c)=>
-          c.name === item.selectedColor.name
-      );
-
-
-    colorsObj[item.id] =
+    colorsObj[item.wishlistId] =
       matchedColor || item.selectedColor;
-
   }
-
 });
 
 
@@ -207,14 +200,14 @@ const getDeliveryDate = () => {
   navigate(`/product/${item.id}`, {
     state: {
       selectedColor:
-        selectedColors[item.id],
+        selectedColors[item.wishlistId],
     },
   })
 }
 >
 <img
 src={
-  selectedColors[item.id]?.image ||
+  selectedColors[item.wishlistId]?.image ||
   item.selectedColor?.image ||
   item.imagePath
 }
@@ -259,9 +252,9 @@ onError={(e)=>{
   >
     <select
       className="form-select form-select-sm"
-      value={
-        selectedColors[item.id]?.name || ""
-      }
+     value={
+selectedColors[item.wishlistId]?.name || ""
+}
       onChange={(e) => {
         const colorObj =
           item.colors.find(
@@ -271,7 +264,7 @@ onError={(e)=>{
 
      setSelectedColors(prev=>({
  ...prev,
- [item.id]:colorObj
+ [item.wishlistId]:colorObj
 }));
       }}
     >
@@ -292,7 +285,7 @@ onError={(e)=>{
           height: "18px",
           borderRadius: "50%",
           background:
-            selectedColors[item.id]
+            selectedColors[item.wishlistId]
               ?.code || "#ccc",
           border: "1px solid #000",
           display: "inline-block",
@@ -301,7 +294,7 @@ onError={(e)=>{
 
       <small className="fw-bold">
         {
-          selectedColors[item.id]
+          selectedColors[item.wishlistId]
             ?.name
         }
       </small>
@@ -407,10 +400,10 @@ onError={(e)=>{
       {
         ...item,
         selectedSize: item.selectedSize,
-        selectedColor: selectedColors[item.id],
+        selectedColor: selectedColors[item.wishlistId],
       },
       item.selectedSize,
-      selectedColors[item.id]
+      selectedColors[item.wishlistId]
     );
   }}
 >
@@ -426,7 +419,7 @@ onError={(e)=>{
     await removeFromWishlist(
       item.id,
       item.selectedSize,
-      selectedColors[item.id]?.name
+      selectedColors[item.wishlistId]?.name
     );
 
   }}

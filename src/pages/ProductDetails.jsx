@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
-
+import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { doc, getDoc } from "firebase/firestore";
@@ -17,6 +18,9 @@ const ProductDetails = () => {
   const [mainImage, setMainImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(null);
+
+  const {  wishlist,  addToWishlist,  removeFromWishlist,} = useWishlist();
+  const { addToCart } = useCart();
   useEffect(() => {
     getProduct();
   }, []);
@@ -59,88 +63,100 @@ const ProductDetails = () => {
     return <h3 className="text-center mt-5">Loading...</h3>;
   }
 
-  const addToWishlist = () => {
-    const user = localStorage.getItem("currentUser");
+  // const addToWishlist = () => {
+  //   const user = localStorage.getItem("currentUser");
 
-    if (!user) {
-      alert("Please Login");
-      navigate("/login");
-      return;
-    }
+  //   if (!user) {
+  //     alert("Please Login");
+  //     navigate("/login");
+  //     return;
+  //   }
 
-    if (product.sizes?.length > 0 && !selectedSize) {
-      alert("Please Select Size");
-      return;
-    }
+  //   if (product.sizes?.length > 0 && !selectedSize) {
+  //     alert("Please Select Size");
+  //     return;
+  //   }
 
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user}`)) || [];
+  //   let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user}`)) || [];
 
-    const exists = wishlist.find((item) => item.id === product.id);
+  //   const exists = wishlist.find((item) => item.id === product.id);
 
-    if (!exists) {
-      wishlist.push({
-        ...product,
+  //   if (!exists) {
+  //     wishlist.push({
+  //       ...product,
 
-        imagePath: selectedColor?.image || product.imagePath,
+  //       imagePath: selectedColor?.image || product.imagePath,
 
-        selectedSize,
+  //       selectedSize,
 
-        selectedColor,
-      });
+  //       selectedColor,
+  //     });
 
-      localStorage.setItem(`wishlist_${user}`, JSON.stringify(wishlist));
+  //     localStorage.setItem(`wishlist_${user}`, JSON.stringify(wishlist));
 
-      alert("Added To Wishlist");
-    } else {
-      alert("Already In Wishlist");
-    }
-  };
+  //     alert("Added To Wishlist");
+  //   } else {
+  //     alert("Already In Wishlist");
+  //   }
+  // };
 
-  const addToCart = () => {
-    const user = localStorage.getItem("currentUser");
 
-    if (!user) {
-      alert("Please Login");
-      navigate("/login");
-      return;
-    }
+  const handleWishlist = async () => {
+  if (product.sizes?.length > 0 && !selectedSize) {
+    alert("Please Select Size");
+    return;
+  }
 
-    if (product.sizes?.length > 0 && !selectedSize) {
-      alert("Please Select Size");
-      return;
-    }
+  if (product.colors?.length > 0 && !selectedColor) {
+    alert("Please Select Color");
+    return;
+  }
 
-    let cart = JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
+  const alreadyWishlisted = wishlist.some(
+    (item) =>
+      item.productId === product.id &&
+      (item.selectedSize || "") === selectedSize &&
+      (item.selectedColor?.name || "") === selectedColor?.name
+  );
 
-    const cartItem = {
-      ...product,
-
-      imagePath: selectedColor?.image || product.imagePath,
-
-      selectedColor,
-
+  if (alreadyWishlisted) {
+    await removeFromWishlist(
+      product.id,
       selectedSize,
-
-      qty: 1,
-    };
-
-    const exists = cart.find(
-      (item) =>
-        item.id === product.id &&
-        item.selectedSize === selectedSize &&
-        item.selectedColor?.name === selectedColor?.name,
+      selectedColor?.name
     );
 
-    if (exists) {
-      exists.qty += 1;
-    } else {
-      cart.push(cartItem);
-    }
+    alert("Removed From Wishlist");
+  } else {
+    await addToWishlist(
+      product,
+      selectedSize,
+      selectedColor
+    );
 
-    localStorage.setItem(`cart_${user}`, JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
-    alert("Added To Cart");
-  };
+    alert("Added To Wishlist");
+  }
+};
+ const handleAddToCart = async () => {
+
+  if (product.sizes?.length > 0 && !selectedSize) {
+    alert("Please Select Size");
+    return;
+  }
+
+  if (product.colors?.length > 0 && !selectedColor) {
+    alert("Please Select Color");
+    return;
+  }
+
+  await addToCart(
+    product,
+    selectedSize,
+    selectedColor
+  );
+
+  alert("Added To Cart");
+};
 
   // const buyNow = () => {
   //   addToCart();
@@ -161,6 +177,38 @@ const ProductDetails = () => {
       month: "short",
     });
   };
+
+const buyNow = () => {
+  if (product.sizes?.length > 0 && !selectedSize) {
+    alert("Please Select Size");
+    return;
+  }
+
+  if (product.colors?.length > 0 && !selectedColor) {
+    alert("Please Select Color");
+    return;
+  }
+
+  navigate("/whatsapp-order", {
+    state: {
+      buyNow: true,
+      product: {
+        ...product,
+        qty: 1,
+        selectedSize,
+        selectedColor,
+      },
+    },
+  });
+};
+
+
+  const alreadyWishlisted = wishlist.some(
+  (item) =>
+    item.productId === product.id &&
+    (item.selectedSize || "") === selectedSize &&
+    (item.selectedColor?.name || "") === selectedColor?.name
+);
   return (
     <>
       <Navbar />
@@ -444,13 +492,31 @@ const ProductDetails = () => {
                   zIndex: 100,
                 }}
               >
-                <button className="btn btn-danger" onClick={addToWishlist}>
-                  ❤️ Wishlist
-                </button>
+<button
+  className={`btn ${
+    alreadyWishlisted
+      ? "btn-danger"
+      : "btn-outline-danger"
+  }`}
+  onClick={handleWishlist}
+>
+  {alreadyWishlisted
+    ? "❤️ Wishlisted"
+    : "🤍 Wishlist"}
+</button>
 
-                <button className="btn btn-primary" onClick={addToCart}>
-                  🛒 Add To Cart
-                </button>
+               <button
+  className="btn btn-primary"
+  onClick={handleAddToCart}
+>
+  🛒 Add To Cart
+</button>
+<button
+  className="btn btn-success"
+  onClick={buyNow}
+>
+  ⚡ Buy Now
+</button>
 
                 {/* <button className="btn btn-success" onClick={buyNow}>
                 ⚡ Buy Now
