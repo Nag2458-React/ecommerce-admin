@@ -1,29 +1,51 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs,doc, updateDoc,Timestamp  } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import Navbar from "./Navbar";
+import {
+  FaCheck,
+  FaBoxOpen,
+  FaShippingFast,
+  FaHome,
+} from "react-icons/fa";
+import generateInvoice from "../utils/generateInvoice";
+
 const statusSteps = [
-  "Pending",
-  "Processing",
-  "Shipped",
-  "Delivered"
+  {
+    label: "Pending",
+    icon: <FaBoxOpen />,
+  },
+  {
+    label: "Processing",
+    icon: <FaCheck />,
+  },
+  {
+    label: "Shipped",
+    icon: <FaShippingFast />,
+  },
+  {
+    label: "Delivered",
+    icon: <FaHome />,
+  },
 ];
 
-
-const getStatusIndex = (status)=>{
-
-  return statusSteps.indexOf(status);
-
-};
+const getStatusIndex = (status) =>
+  statusSteps.findIndex((s) => s.label === status);
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
 
   const user = localStorage.getItem("currentUser");
-const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
-const [cancelReason, setCancelReason] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
 
-const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -44,30 +66,30 @@ const [selectedOrder, setSelectedOrder] = useState(null);
       console.log(error);
     }
   };
-const cancelOrder = async () => {
-  if (!cancelReason) {
-    alert("Please select cancellation reason");
-    return;
-  }
+  const cancelOrder = async () => {
+    if (!cancelReason) {
+      alert("Please select cancellation reason");
+      return;
+    }
 
-  try {
-    await updateDoc(doc(db, "orders", selectedOrder), {
-      orderStatus: "Cancelled",
-      cancelReason: cancelReason,
-      cancelledAt: Timestamp.now(),
-    });
+    try {
+      await updateDoc(doc(db, "orders", selectedOrder), {
+        orderStatus: "Cancelled",
+        cancelReason: cancelReason,
+        cancelledAt: Timestamp.now(),
+      });
 
-    alert("Order Cancelled Successfully");
+      alert("Order Cancelled Successfully");
 
-    setShowCancelModal(false);
-    setCancelReason("");
-    setSelectedOrder(null);
+      setShowCancelModal(false);
+      setCancelReason("");
+      setSelectedOrder(null);
 
-    fetchOrders();
-  } catch (error) {
-    console.log(error);
-  }
-};
+      fetchOrders();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       {" "}
@@ -108,24 +130,16 @@ const cancelOrder = async () => {
             </div>
           </div>
           <div className="col-md-3 mb-3">
-  <div className="card border-0">
-    <div className="card-body text-center">
+            <div className="card border-0">
+              <div className="card-body text-center">
+                <h3 className="text-danger">
+                  {orders.filter((o) => o.orderStatus === "Cancelled").length}
+                </h3>
 
-      <h3 className="text-danger">
-        {
-          orders.filter(
-            (o) => o.orderStatus === "Cancelled"
-          ).length
-        }
-      </h3>
-
-      <small>
-        Cancelled Orders
-      </small>
-
-    </div>
-  </div>
-</div>
+                <small>Cancelled Orders</small>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="row">
           {orders.length === 0 ? (
@@ -263,124 +277,111 @@ const cancelOrder = async () => {
                       <strong className="ms-1">{order.paymentStatus}</strong>
                     </div>
                     <div className="mt-3 d-flex gap-2">
+                      {order.orderStatus !== "Cancelled" &&
+                        order.orderStatus !== "Delivered" && (
+                          <button
+                            className="btn btn-danger btn-sm w-100"
+                            onClick={() => {
+                              setSelectedOrder(order.id);
+                              setShowCancelModal(true);
+                            }}
+                          >
+                            ❌ Cancel Order
+                          </button>
+                        )}
+                    </div>
+                    {order.orderStatus === "Cancelled" && (
+                      <div className="mt-2">
+                        <div className="alert alert-danger mb-2">
+                          ❌ This order has been cancelled.
+                        </div>
 
-{order.orderStatus !== "Cancelled" &&
- order.orderStatus !== "Delivered" && (
-<button
-  className="btn btn-danger btn-sm w-100"
-  onClick={() => {
-    setSelectedOrder(order.id);
-    setShowCancelModal(true);
-  }}
->
-  ❌ Cancel Order
-</button>
-)}
+                        <div className="card border-0 bg-light">
+                          <div className="card-body py-2">
+                            <h6 className="fw-bold mb-2">💰 Refund Status</h6>
 
-</div>
-    {order.orderStatus === "Cancelled" && (
-  <div className="mt-2">
+                            <span
+                              className={`badge ${
+                                order.refundStatus === "Completed"
+                                  ? "bg-success"
+                                  : "bg-warning text-dark"
+                              }`}
+                            >
+                              {order.refundStatus || "Pending"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-    <div className="alert alert-danger mb-2">
-      ❌ This order has been cancelled.
-    </div>
+                   {order.orderStatus !== "Cancelled" && (
+  <div className="mt-4">
 
-    <div className="card border-0 bg-light">
-      <div className="card-body py-2">
+    <h6 className="fw-bold mb-3">
+      🚚 Order Timeline
+    </h6>
 
-        <h6 className="fw-bold mb-2">
-          💰 Refund Status
-        </h6>
+    <div className="timeline">
 
-        <span
-          className={`badge ${
-            order.refundStatus === "Completed"
-              ? "bg-success"
-              : "bg-warning text-dark"
-          }`}
-        >
-          {order.refundStatus || "Pending"}
-        </span>
+      {statusSteps.map((step, index) => {
+        const active = index <= getStatusIndex(order.orderStatus);
+        const current = index === getStatusIndex(order.orderStatus);
 
-      </div>
+        return (
+          <div
+            className="timeline-item"
+            key={step.label}
+          >
+
+            <div
+              className={`timeline-circle ${
+                active ? "active" : ""
+              } ${current ? "current" : ""}`}
+            >
+              {active ? (
+                <FaCheck />
+              ) : (
+                step.icon
+              )}
+            </div>
+
+            {index !== statusSteps.length - 1 && (
+              <div
+                className={`timeline-line ${
+                  index < getStatusIndex(order.orderStatus)
+                    ? "active"
+                    : ""
+                }`}
+              />
+            )}
+
+            <small
+              className={`timeline-label ${
+                active ? "text-success" : "text-muted"
+              }`}
+            >
+              {step.label}
+            </small>
+
+          </div>
+        );
+      })}
     </div>
 
   </div>
 )}
 
+   {order.orderStatus === "Delivered" && (
+  <div className="mt-3">
 
-{order.orderStatus !== "Cancelled" && (
+    <button
+      className="btn btn-outline-dark w-100 fw-bold"
+      onClick={() => generateInvoice(order)}
+    >
+      📄 Download Tax Invoice
+    </button>
 
-<div className="mt-3">
-
-<h6 className="fw-bold">
-Order Status
-</h6>
-
-
-<div className="d-flex justify-content-between">
-
-{
-statusSteps.map((step,index)=>(
-
-
-<div 
-key={index}
-className="text-center"
-style={{width:"25%"}}
->
-
-
-<div
-style={{
-width:"25px",
-height:"25px",
-borderRadius:"50%",
-margin:"auto",
-background:
-index <= getStatusIndex(order.orderStatus)
-?
-"#198754"
-:
-"#ddd",
-color:"#fff",
-display:"flex",
-alignItems:"center",
-justifyContent:"center"
-}}
->
-
-✓
-
-</div>
-
-
-<small
-className={
-index <= getStatusIndex(order.orderStatus)
-?
-"text-success"
-:
-"text-muted"
-}
->
-
-{step}
-
-</small>
-
-
-</div>
-
-
-))
-
-}
-
-</div>
-
-</div>
-
+  </div>
 )}
                     <div className="mt-2">
                       🚚 Delivery:
@@ -404,103 +405,65 @@ index <= getStatusIndex(order.orderStatus)
           )}
         </div>
         {showCancelModal && (
-  <div
-    className="modal fade show d-block"
-    style={{
-      background: "rgba(0,0,0,.55)",
-    }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-
-      <div className="modal-content">
-
-        <div className="modal-header">
-
-          <h4 className="fw-bold">
-            Cancel Order
-          </h4>
-
-        </div>
-
-        <div className="modal-body">
-
-          <label className="fw-bold mb-2">
-            Select Reason
-          </label>
-
-          <select
-            className="form-select"
-            value={cancelReason}
-            onChange={(e) =>
-              setCancelReason(e.target.value)
-            }
-          >
-            <option value="">
-              Select Reason
-            </option>
-
-            <option>
-              Ordered by mistake
-            </option>
-
-            <option>
-              Found cheaper elsewhere
-            </option>
-
-            <option>
-              Delivery is too late
-            </option>
-
-            <option>
-              Wrong address selected
-            </option>
-
-            <option>
-              Need different size
-            </option>
-
-            <option>
-              Need different color
-            </option>
-
-            <option>
-              Payment issue
-            </option>
-
-            <option>
-              Other
-            </option>
-
-          </select>
-
-        </div>
-
-        <div className="modal-footer">
-
-          <button
-            className="btn btn-secondary"
-            onClick={()=>{
-              setShowCancelModal(false);
-              setCancelReason("");
+          <div
+            className="modal fade show d-block"
+            style={{
+              background: "rgba(0,0,0,.55)",
             }}
           >
-            Close
-          </button>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h4 className="fw-bold">Cancel Order</h4>
+                </div>
 
-          <button
-            className="btn btn-danger"
-            onClick={cancelOrder}
-          >
-            Confirm Cancel
-          </button>
+                <div className="modal-body">
+                  <label className="fw-bold mb-2">Select Reason</label>
 
-        </div>
+                  <select
+                    className="form-select"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  >
+                    <option value="">Select Reason</option>
 
-      </div>
+                    <option>Ordered by mistake</option>
 
-    </div>
-  </div>
-)}
+                    <option>Found cheaper elsewhere</option>
+
+                    <option>Delivery is too late</option>
+
+                    <option>Wrong address selected</option>
+
+                    <option>Need different size</option>
+
+                    <option>Need different color</option>
+
+                    <option>Payment issue</option>
+
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setShowCancelModal(false);
+                      setCancelReason("");
+                    }}
+                  >
+                    Close
+                  </button>
+
+                  <button className="btn btn-danger" onClick={cancelOrder}>
+                    Confirm Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import "react-medium-image-zoom/dist/styles.css";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-
+import ProductReviews from "../components/ProductReviews";
 import { doc, getDoc } from "firebase/firestore";
 import StarRating from "../admin/pages/StarRating";
 import { db } from "../firebase/firebase";
@@ -258,7 +258,7 @@ const buyNow = () => {
                 of {product.colors?.length}
               </div>
               {product.colors?.length > 0 && (
-                <div className="d-flex gap-3 mt-4 flex-wrap">
+                <div className="d-flex gap-3 mt-4 flex-wrap position-sticky bottom-0">
                   {product.colors?.map((color, index) => (
                     <div
                       key={index}
@@ -293,7 +293,7 @@ const buyNow = () => {
               <div className="d-flex align-items-center gap-2">
                 <StarRating rating={product.rating || 4.5} />
 
-                <span className="badge bg-success">
+                <span className="">
                   {product.rating || 4.5}
                 </span>
 
@@ -382,7 +382,7 @@ const buyNow = () => {
                   <strong>Quantity:</strong> {product.quantity}
                 </p>
               </div>
-
+<ProductReviews product={product} />
               <div className="card p-3 mb-3 pd-card">
                 <h5>Description</h5>
                 <p>{product.description}</p>

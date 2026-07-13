@@ -20,7 +20,7 @@ const Wishlist = () => {
   removeFromWishlist,
 } = useWishlist();
 const [wishlistProducts, setWishlistProducts] = useState([]);
-const [selectedColors, setSelectedColors] =  useState({});
+// const [selectedColors, setSelectedColors] =  useState({});
 useEffect(() => {
   const loadWishlistProducts = async () => {
     try {
@@ -45,21 +45,7 @@ useEffect(() => {
 
       setWishlistProducts(data);
 
-     const colorsObj = {};
-
-data.forEach((item) => {
-  if (item.selectedColor) {
-    const matchedColor = item.colors?.find(
-      (c) => c.name === item.selectedColor.name
-    );
-
-    colorsObj[item.wishlistId] =
-      matchedColor || item.selectedColor;
-  }
-});
-
-
-setSelectedColors(colorsObj);
+   
     } catch (err) {
       console.error(err);
     }
@@ -198,16 +184,14 @@ const getDeliveryDate = () => {
   }}
   onClick={() =>
   navigate(`/product/${item.id}`, {
-    state: {
-      selectedColor:
-        selectedColors[item.wishlistId],
-    },
+   state: {
+  selectedColor: item.selectedColor,
+},
   })
 }
 >
 <img
 src={
-  selectedColors[item.wishlistId]?.image ||
   item.selectedColor?.image ||
   item.imagePath
 }
@@ -245,60 +229,22 @@ onError={(e)=>{
     </span>
   </div>
 )}
-{item.colors?.length > 0 && (
-  <div
-    className="mb-3"
-    onClick={(e) => e.stopPropagation()}
-  >
-    <select
-      className="form-select form-select-sm"
-     value={
-selectedColors[item.wishlistId]?.name || ""
-}
-      onChange={(e) => {
-        const colorObj =
-          item.colors.find(
-            (c) =>
-              c.name === e.target.value
-          );
-
-     setSelectedColors(prev=>({
- ...prev,
- [item.wishlistId]:colorObj
-}));
+{item.selectedColor && (
+  <div className="d-flex justify-content-center align-items-center gap-2 mb-3">
+    <span
+      style={{
+        width: "18px",
+        height: "18px",
+        borderRadius: "50%",
+        background: item.selectedColor.code,
+        border: "1px solid #999",
+        display: "inline-block",
       }}
-    >
-      {item.colors.map((color) => (
-        <option
-          key={color.name}
-          value={color.name}
-        >
-          {color.name}
-        </option>
-      ))}
-    </select>
+    ></span>
 
-    <div className="mt-2 d-flex justify-content-center align-items-center gap-2">
-      <span
-        style={{
-          width: "18px",
-          height: "18px",
-          borderRadius: "50%",
-          background:
-            selectedColors[item.wishlistId]
-              ?.code || "#ccc",
-          border: "1px solid #000",
-          display: "inline-block",
-        }}
-      ></span>
-
-      <small className="fw-bold">
-        {
-          selectedColors[item.wishlistId]
-            ?.name
-        }
-      </small>
-    </div>
+    <small className="fw-bold">
+      {item.selectedColor.name}
+    </small>
   </div>
 )}
 {/* Description */}
@@ -400,10 +346,10 @@ selectedColors[item.wishlistId]?.name || ""
       {
         ...item,
         selectedSize: item.selectedSize,
-        selectedColor: selectedColors[item.wishlistId],
+        selectedColor: item.selectedColor,
       },
       item.selectedSize,
-      selectedColors[item.wishlistId]
+      item.selectedColor
     );
   }}
 >
@@ -416,11 +362,7 @@ selectedColors[item.wishlistId]?.name || ""
 
     e.stopPropagation();
 
-    await removeFromWishlist(
-      item.id,
-      item.selectedSize,
-      selectedColors[item.wishlistId]?.name
-    );
+    await removeFromWishlist(item.id);
 
   }}
 >

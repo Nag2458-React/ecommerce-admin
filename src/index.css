@@ -394,3 +394,80 @@ li.nav-item .text-danger {
 .dashboard-card:hover img {
   transform: scale(1.08);
 } */
+
+
+
+/* shipping */
+.timeline{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+position:relative;
+margin-top:15px;
+}
+
+.timeline-item{
+flex:1;
+position:relative;
+text-align:center;
+}
+
+.timeline-circle{
+width:42px;
+height:42px;
+border-radius:50%;
+border:3px solid #d5d5d5;
+background:#fff;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:auto;
+font-size:18px;
+color:#bdbdbd;
+position:relative;
+z-index:2;
+transition:.3s;
+}
+
+.timeline-circle.active{
+border-color:#198754;
+background:#198754;
+color:#fff;
+}
+
+.timeline-circle.current{
+box-shadow:0 0 0 6px rgba(25,135,84,.18);
+}
+
+.timeline-line{
+position:absolute;
+top:20px;
+left:50%;
+width:100%;
+height:4px;
+background:#d9d9d9;
+z-index:1;
+}
+
+.timeline-line.active{
+background:#198754;
+}
+
+.timeline-label{
+display:block;
+margin-top:10px;
+font-size:12px;
+font-weight:600;
+}
+/* shipping End*/
+
+
+.wishlist-card{
+    border:2px solid #ff4d6d;
+    box-shadow:0 8px 20px rgba(255,77,109,.18);
+    transition:.3s ease;
+}
+
+.wishlist-card:hover{
+    transform:translateY(-4px);
+}

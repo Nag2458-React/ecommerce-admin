@@ -78,32 +78,19 @@ export const getWishlist = async (uid) => {
 
 export const removeWishlistItem = async (
   uid,
-  productId,
-  selectedSize,
-  selectedColor
+  productId
 ) => {
 
   const q = query(
     collection(db, "wishlist"),
     where("uid", "==", uid),
-    where("productId", "==", productId),
-    where("selectedSize", "==", selectedSize),
-    where("selectedColor.name", "==", selectedColor)
+    where("productId", "==", productId)
   );
-
 
   const snapshot = await getDocs(q);
 
-
-  console.log("REMOVE FOUND:", snapshot.docs.length);
-
-
-  snapshot.forEach(async (item)=>{
-
-    await deleteDoc(
-      doc(db,"wishlist",item.id)
-    );
-
-  });
+  for (const item of snapshot.docs) {
+    await deleteDoc(doc(db, "wishlist", item.id));
+  }
 
 };

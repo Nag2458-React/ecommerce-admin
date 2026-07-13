@@ -41,14 +41,11 @@ export const WishlistProvider = ({ children }) => {
 
       // REMOVE DUPLICATES
       const uniqueData = data.filter(
-        (item,index,self)=>
-          index === self.findIndex(
-            (x)=>
-              x.productId === item.productId &&
-              x.selectedSize === item.selectedSize &&
-              x.selectedColor?.name === item.selectedColor?.name
-          )
-      );
+  (item, index, self) =>
+    index === self.findIndex(
+      (x) => x.productId === item.productId
+    )
+);
 
 
       setWishlist(uniqueData);
@@ -110,12 +107,9 @@ export const WishlistProvider = ({ children }) => {
 
     // CHECK DUPLICATE HERE
 
-    const exists = wishlist.some(
-      (item)=>
-        item.productId === product.id &&
-        item.selectedSize === selectedSize &&
-        item.selectedColor?.name === selectedColor?.name
-    );
+   const exists = wishlist.some(
+  (item) => item.productId === product.id
+);
 
 
 
@@ -148,11 +142,9 @@ export const WishlistProvider = ({ children }) => {
   // ================= REMOVE =================
 
 
-  const removeFromWishlist = async (
-    productId,
-    selectedSize,
-    selectedColor
-  )=>{
+const removeFromWishlist = async (
+  productId
+)=>{
 
 
     const user = auth.currentUser;
@@ -165,8 +157,7 @@ export const WishlistProvider = ({ children }) => {
     await removeWishlistItem(
       user.uid,
       productId,
-      selectedSize,
-      selectedColor
+      
     );
 
 
@@ -181,25 +172,13 @@ export const WishlistProvider = ({ children }) => {
   // ================= CHECK =================
 
 
-  const isWishlisted = (
-    productId,
-    selectedSize,
-    selectedColor
-  )=>{
+ const isWishlisted = (productId) => {
 
+  return wishlist.some(
+    (item) => item.productId === productId
+  );
 
-    return wishlist.some(
-
-      (item)=>
-
-      item.productId === productId &&
-      item.selectedSize === selectedSize &&
-      item.selectedColor?.name === selectedColor
-
-    );
-
-
-  };
+};
 
 
 

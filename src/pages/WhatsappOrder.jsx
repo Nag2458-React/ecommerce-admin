@@ -28,7 +28,9 @@ const orderItems = isBuyNow
     address: "",
     pincode: "",
   });
-
+const [couponCode, setCouponCode] = useState("");
+const [discount, setDiscount] = useState(0);
+const [appliedCoupon, setAppliedCoupon] = useState("");
   useEffect(() => {
     const saved = JSON.parse(
       localStorage.getItem("customerDetails")
@@ -62,10 +64,65 @@ const totalItems = orderItems.reduce(
 
   const deliveryCharge = total >= 1000 ? 0 : 50;
 
-  const grandTotal = total + deliveryCharge;
+  const grandTotal = total + deliveryCharge - discount;
 
   const whatsappNumber = "918008320342";
+const applyCoupon = () => {
 
+  const code = couponCode.trim().toUpperCase();
+
+  if (code === "WELCOME10") {
+
+    const dis = Math.min(Math.round(total * 0.10), 200);
+
+    setDiscount(dis);
+    setAppliedCoupon(code);
+
+    alert(`Coupon Applied! ₹${dis} Discount`);
+
+  }
+
+  else if (code === "SAVE100") {
+
+    if (total >= 999) {
+
+      setDiscount(100);
+      setAppliedCoupon(code);
+
+      alert("₹100 Discount Applied");
+
+    } else {
+
+      alert("Minimum order ₹999 required.");
+
+    }
+
+  }
+
+  else if (code === "BANGLE50") {
+
+    if (total >= 499) {
+
+      setDiscount(50);
+      setAppliedCoupon(code);
+
+      alert("₹50 Discount Applied");
+
+    } else {
+
+      alert("Minimum order ₹499 required.");
+
+    }
+
+  }
+
+  else {
+
+    alert("Invalid Coupon Code");
+
+  }
+
+};
   const sendOrder = async () => {
     if (
       !customer.name ||
@@ -124,7 +181,12 @@ const totalItems = orderItems.reduce(
         ? "FREE"
         : "₹" + deliveryCharge
     }\n`;
+    if (discount > 0) {
 
+  message += `Coupon : ${appliedCoupon}\n`;
+  message += `Discount : ₹${discount}\n`;
+
+}
     message += `Grand Total : ₹${grandTotal}\n\n`;
 
     message += `🙏 Please confirm my order.`;
@@ -289,9 +351,83 @@ return (
                     : `₹${deliveryCharge}`}
                 </strong>
               </div>
+{discount > 0 && (
 
-              <hr />
+<div className="d-flex justify-content-between mt-2">
 
+<span className="text-success">
+Coupon Discount
+</span>
+
+<strong className="text-success">
+- ₹{discount}
+</strong>
+
+</div>
+
+)}
+              
+                    <div className="card  mb-3" style={{
+                      background: "#fff8e1",
+                      border: "1px dashed #f0ad4e",
+                    }}>
+
+  <div className="card-body" >
+
+    <h6 className="fw-bold mb-3">
+      🏷 Available Coupons
+    </h6>
+
+    <div className="small mb-2">
+      <strong>WELCOME10</strong>
+      <br />
+      Get 10% OFF (Max ₹200)
+    </div>
+
+    <div className="small mb-2">
+      <strong>SAVE100</strong>
+      <br />
+      Flat ₹100 OFF on orders above ₹999
+    </div>
+
+    <div className="small mb-3">
+      <strong>BANGLE50</strong>
+      <br />
+      Flat ₹50 OFF on orders above ₹499
+    </div>
+
+    <div className="input-group">
+
+      <input
+        className="form-control"
+        placeholder="Enter Coupon Code"
+        value={couponCode}
+        onChange={(e) => setCouponCode(e.target.value)}
+      />
+
+      <button
+        className="btn btn-success"
+        onClick={applyCoupon}
+      >
+        Apply
+      </button>
+
+    </div>
+
+    {appliedCoupon && (
+
+      <div className="alert alert-success mt-3 mb-0">
+
+        ✅ Coupon Applied :
+        <strong> {appliedCoupon}</strong>
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
               <div className="d-flex justify-content-between">
 
                 <h4>Grand Total</h4>

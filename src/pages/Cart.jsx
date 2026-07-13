@@ -349,7 +349,7 @@ const Cart = () => {
                       {deliveryCharge === 0 ? "FREE 🎉" : `₹${deliveryCharge}`}
                     </strong>
                   </p>
-                  <hr />
+                
 
                   <div
                     className="p-3 rounded mb-3"

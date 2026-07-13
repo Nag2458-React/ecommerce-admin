@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs,  query,  where, } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,29 +7,19 @@ import Navbar from "./Navbar";
 import { FaShoppingCart } from "react-icons/fa";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { toast } from "react-toastify";
-import StarRating from "../admin/pages/StarRating";
-import "react-toastify/dist/ReactToastify.css";
+
 const Home = () => {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [animatingWishlist, setAnimatingWishlist] = useState({});
+
   const [selectedSizes, setSelectedSizes] = useState({});
   const [selectedColors, setSelectedColors] = useState({});
   const [sizeError, setSizeError] = useState({});
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-   const [searchTerm, setSearchTerm] = useState("");
 
-const [categoryFilter, setCategoryFilter] = useState("All");
-
-const [priceFilter, setPriceFilter] = useState("All");
-
-const [ratingFilter, setRatingFilter] = useState("All");
-
-const [sortBy, setSortBy] = useState("Newest");
   const { addToCart } = useCart();
 
   // -----------------------------
@@ -44,40 +34,8 @@ const [sortBy, setSortBy] = useState("Newest");
         id: doc.id,
         ...doc.data(),
       }));
-    const productsWithRatings = await Promise.all(
-  data.map(async (product) => {
 
-    const reviewQuery = query(
-      collection(db, "reviews"),
-      where("productId", "==", product.id)
-    );
-
-    const reviewSnap = await getDocs(reviewQuery);
-
-    const reviews = reviewSnap.docs.map((d) => d.data());
-
-    const reviewCount = reviews.length;
-
-    const rating =
-      reviewCount > 0
-        ? (
-            reviews.reduce(
-              (sum, r) => sum + Number(r.rating),
-              0
-            ) / reviewCount
-          ).toFixed(1)
-        : 0;
-
-    return {
-      ...product,
-      rating: Number(rating),
-      reviewCount,
-    };
-  })
-);
-
-setProducts(productsWithRatings);
-    setProducts(productsWithRatings);
+      setProducts(data);
 
       const defaultColors = {};
 
@@ -94,10 +52,7 @@ setProducts(productsWithRatings);
       setLoading(false);
     }
   };
-const categories = [
-  "All",
-  ...new Set(products.map((p) => p.category)),
-];
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -123,81 +78,59 @@ const categories = [
   // -----------------------------
 
   const isProductWishlisted = (productId) => {
-  return wishlist.some(
-    (item) => item.productId === productId
-  );
-};
+    const size = selectedSizes[productId] || "";
+
+    const color = selectedColors[productId]?.name || "";
+
+    return wishlist.some(
+      (item) =>
+        item.productId === productId &&
+        (item.selectedSize || "") === size &&
+        (item.selectedColor?.name || "") === color,
+    );
+  };
 
   // -----------------------------
   // Wishlist Toggle
   // -----------------------------
 
- const toggleWishlist = async (product) => {
-  const selectedSize = selectedSizes[product.id] || "";
+  const toggleWishlist = async (product) => {
+    const selectedSize = selectedSizes[product.id] || "";
 
-  const selectedColor = selectedColors[product.id];
+    const selectedColor = selectedColors[product.id];
 
-  const alreadyWishlisted = isProductWishlisted(product.id);
+    const alreadyWishlisted = isProductWishlisted(product.id);
 
-  // ---------------- REMOVE ----------------
+    // REMOVE
 
-  if (alreadyWishlisted) {
+    if (alreadyWishlisted) {
+      await removeFromWishlist(product.id, selectedSize, selectedColor?.name);
 
-    await removeFromWishlist(      product.id       );
+      return;
+    }
 
-    toast.info("🗑 Removed from Wishlist");
+    // SIZE REQUIRED
 
-    return;
-  }
+    if (product.sizes?.length > 0 && !selectedSize) {
+      alert("Please Select Size");
 
-  // ---------------- SIZE VALIDATION ----------------
+      setSizeError((prev) => ({
+        ...prev,
+        [product.id]: true,
+      }));
 
-  if (product.sizes?.length > 0 && !selectedSize) {
+      return;
+    }
 
-    alert("Please Select Size");
+    // COLOR REQUIRED
 
-    setSizeError((prev) => ({
-      ...prev,
-      [product.id]: true,
-    }));
+    if (product.colors?.length > 0 && !selectedColor) {
+      alert("Please Select Color");
+      return;
+    }
 
-    return;
-  }
-
-  // ---------------- COLOR VALIDATION ----------------
-
-  if (product.colors?.length > 0 && !selectedColor) {
-
-    alert("Please Select Color");
-
-    return;
-  }
-
-  // ---------------- ADD ----------------
-
-  await addToWishlist(
-    product,
-    selectedSize,
-    selectedColor
-  );
-
-  toast.success("❤️ Added to Wishlist");
-
-  setAnimatingWishlist((prev) => ({
-    ...prev,
-    [product.id]: true,
-  }));
-
-  setTimeout(() => {
-
-    setAnimatingWishlist((prev) => ({
-      ...prev,
-      [product.id]: false,
-    }));
-
-  }, 700);
-
-};
+    await addToWishlist(product, selectedSize, selectedColor);
+  };
 
   // -----------------------------
   // Delivery Date
@@ -247,40 +180,7 @@ const buyNow = (product) => {
     },
   });
 };
-const filteredProducts = products.filter((item) => {
- const matchSearch =
-  item.productName
-    ?.toLowerCase()
-    .includes(searchTerm.toLowerCase()) ||
-  item.category
-    ?.toLowerCase()
-    .includes(searchTerm.toLowerCase());
 
-  const matchCategory =
-    categoryFilter === "All" ||
-    item.category === categoryFilter;
-
-  const price =
-    Number(item.discountPrice || item.price);
-
-  let matchPrice = true;
-
-  if (priceFilter === "0-500")
-    matchPrice = price <= 500;
-
-  if (priceFilter === "500-1000")
-    matchPrice =
-      price > 500 && price <= 1000;
-
-  if (priceFilter === "1000+")
-    matchPrice = price > 1000;
-
-  return (
-    matchSearch &&
-    matchCategory &&
-    matchPrice
-  );
-});
   return (
     <div className="">
       {/* ================= NAVBAR ================= */}
@@ -294,111 +194,13 @@ const filteredProducts = products.filter((item) => {
       <div className="products">
         <div className="container">
           <h4 className="m-3 text-black">Latest Products</h4>
-         <div
-  className="card shadow-sm border-0 p-3 mb-4"
-  style={{
-    borderRadius: "15px",
-    background: "#fff",
-  }}
->
-  <div className="row g-3 align-items-center">
 
-    {/* Search */}
-    <div className="col-lg-5 col-md-12">
-      <input
-        type="text"
-        className="form-control"
-        placeholder="🔍 Search Products..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-          boxShadow: "none",
-        }}
-      />
-    </div>
-
-    {/* Category */}
-    <div className="col-lg-3 col-md-6">
-      <select
-        className="form-select"
-        value={categoryFilter}
-        onChange={(e) =>
-          setCategoryFilter(e.target.value)
-        }
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-          boxShadow: "none",
-        }}
-      >
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            📂 {cat}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Price */}
-    <div className="col-lg-2 col-md-3">
-      <select
-        className="form-select"
-        value={priceFilter}
-        onChange={(e) =>
-          setPriceFilter(e.target.value)
-        }
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-          boxShadow: "none",
-        }}
-      >
-        <option value="All">
-          💰 All Prices
-        </option>
-
-        <option value="0-500">
-          Under ₹500
-        </option>
-
-        <option value="500-1000">
-          ₹500 - ₹1000
-        </option>
-
-        <option value="1000+">
-          Above ₹1000
-        </option>
-      </select>
-    </div>
-
-    {/* Reset */}
-    <div className="col-lg-2 col-md-3">
-      <button
-        className="btn btn-dark w-100"
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-        }}
-        onClick={() => {
-          setSearchTerm("");
-          setCategoryFilter("All");
-          setPriceFilter("All");
-        }}
-      >
-        Reset
-      </button>
-    </div>
-
-  </div>
-</div>
           {loading && <p>Loading...</p>}
 
           {!loading && products.length === 0 && <p>No Products Found</p>}
 
           <div className="row">
-            {filteredProducts.map((item, index) => {
+            {products.map((item, index) => {
               const alreadyWishlisted = isProductWishlisted(item.id);
 
               return (
@@ -422,9 +224,7 @@ const filteredProducts = products.filter((item) => {
                   }}
                 >
                   <div
-                   className={`card shadow dashboard-card ${
-  alreadyWishlisted ? "wishlist-card" : ""
-}`}
+                    className="card shadow dashboard-card"
                     onClick={() => {
                       navigate(`/product/${item.id}`, {
                         state: {
@@ -435,39 +235,33 @@ const filteredProducts = products.filter((item) => {
                   >
                     {/* WISHLIST */}
 
-                <button
-  className="btn"
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleWishlist(item);
-  }}
-  style={{
-    width: "42px",
-    height: "42px",
-    position: "absolute",
-    right: "10px",
-    top: "10px",
-    zIndex: 10,
-    borderRadius: "50%",
-    background: "#fff",
-    boxShadow: alreadyWishlisted
-      ? "0 4px 12px rgba(220,53,69,.35)"
-      : "0 2px 8px rgba(0,0,0,.15)",
-    transform: animatingWishlist[item.id]
-      ? "scale(1.2)"
-      : "scale(1)",
-    transition: ".25s ease",
-  }}
->
-  <span
-    style={{
-      fontSize: "22px",
-      transition: ".25s",
-    }}
-  >
-    {alreadyWishlisted ? "❤️" : "🤍"}
-  </span>
-</button>
+                    <button
+                      className={`btn ${
+                        alreadyWishlisted ? "btn-danger" : "btn-outline-danger"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        toggleWishlist(item);
+                      }}
+                      style={{
+                        width: "42px",
+
+                        height: "42px",
+
+                        position: "absolute",
+
+                        right: "10px",
+
+                        top: "10px",
+
+                        zIndex: 10,
+
+                        borderRadius: "50%",
+                      }}
+                    >
+                      {alreadyWishlisted ? "❤️" : "🤍"}
+                    </button>
 
                     {/* IMAGE */}
 
@@ -506,25 +300,11 @@ const filteredProducts = products.filter((item) => {
                           WebkitBoxOrient: "vertical",
 
                           overflow: "hidden",
-                          marginBottom:"5px"
                         }}
                       >
                         {item.description}
                       </p>
-<div className="d-flex justify-content-center align-items-center gap-2 mb-2">
 
-  <StarRating
-    rating={item.rating}
-    size={16}
-  />
-
-  <small className="text-muted">
-    {item.rating}
-    {" "}
-    ({item.reviewCount})
-  </small>
-
-</div>
                       {/* PART-2 START HERE */}
                       {/* SIZE + COLOR */}
 
@@ -540,8 +320,16 @@ const filteredProducts = products.filter((item) => {
                                   : ""
                               }`}
                               value={selectedSizes[item.id] || ""}
-                              
-                              
+                              disabled={alreadyWishlisted}
+                              style={{
+                                backgroundColor: alreadyWishlisted
+                                  ? "#f5f5f5"
+                                  : "",
+
+                                cursor: alreadyWishlisted
+                                  ? "not-allowed"
+                                  : "pointer",
+                              }}
                               onClick={(e) => e.stopPropagation()}
                               onChange={(e) =>
                                 handleSizeSelect(item.id, e.target.value)
@@ -592,10 +380,10 @@ const filteredProducts = products.filter((item) => {
 
                       {/* MATERIAL */}
 
-                      <div className="mt-0">
+                      <div className="mt-2">
                         <label className="fw-semibold small">Material</label>
 
-                        <p className="small text-muted mb-0">
+                        <p className="small text-muted mb-1">
                           {item.material || "Premium Quality"}
                         </p>
                       </div>
@@ -613,7 +401,7 @@ const filteredProducts = products.filter((item) => {
                               ₹{item.price}
                             </span>
 
-                            <span style={{marginLeft:"5px",fontSize:"14px",color:"#7d3ccf"}}>
+                            <span className="badge bg-success ms-2">
                               {Math.round(
                                 ((item.price - item.discountPrice) /
                                   item.price) *
@@ -622,7 +410,7 @@ const filteredProducts = products.filter((item) => {
                               % OFF
                             </span>
 
-                            <div className="small text-success">
+                            <div className="small text-success mt-1">
                               You save ₹{item.price - item.discountPrice}
                             </div>
                           </>
@@ -633,7 +421,7 @@ const filteredProducts = products.filter((item) => {
 
                       {/* DELIVERY DATE */}
 
-                      <div className="">
+                      <div className="mt-2">
                         <span className="small text-success">
                           🚚 Delivery by {getDeliveryDate()}
                         </span>
@@ -642,7 +430,7 @@ const filteredProducts = products.filter((item) => {
                       {/* PART-3 START HERE */}
                       {/* ACTION BUTTONS */}
 
-                      <div className="d-flex gap-2 mt-1">
+                      <div className="d-flex gap-2 mt-3">
                         {/* ADD CART */}
 
                        <button
