@@ -249,7 +249,16 @@ const handleLogout = async () => {
                 Profile
               </NavLink>
             </li>
-
+<li>
+<a
+  href="https://github.com/Nag2458-React/ecommerce-admin/releases/latest/download/app-release-unsigned.apk"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn btn-success ms-2"
+>
+  📱 Download App
+</a>
+</li>
           </ul>
 
           <div className="d-flex align-items-center">
