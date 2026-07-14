@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Release APK
 
 on:
   push:
@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -29,22 +29,22 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Vite App
+      - name: Build React App
         run: npm run build
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Grant execute permission
+      - name: Grant Gradle Permission
         run: chmod +x android/gradlew
 
-      - name: Build APK
+      - name: Build Release APK
         run: |
           cd android
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
-      - name: Upload APK
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: BanglesShop-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: BanglesShop-Release-APK
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
