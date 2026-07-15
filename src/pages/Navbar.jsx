@@ -193,17 +193,7 @@ const Navbar = () => {
                 Profile
               </NavLink>
             </li>
-            <li>
-  <a
-    href="https://github.com/Nag2458-React/ecommerce-admin/releases/latest/download/app-debug.apk"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="download-app-btn ms-2"
-  >
-    <FaDownload className="me-1 download-icon" />
-    Download App
-  </a>
-</li>
+           
           </ul>
 
           <div className="d-flex align-items-center">
@@ -217,6 +207,15 @@ const Navbar = () => {
               <FaSignOutAlt className="me-1" />
               Logout
             </button>
+             <a
+    href="https://github.com/Nag2458-React/ecommerce-admin/releases/latest/download/app-debug.apk"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="download-app-btn ms-2"
+  >
+    <FaDownload className="me-1 download-icon" />
+    Download App
+  </a>
           </div>
         </div>
       </div>
