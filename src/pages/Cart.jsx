@@ -103,9 +103,9 @@ const Cart = () => {
                         </div>
 
                         <div className="card-body">
-                          <h5 className="fw-bold">{item.productName}</h5>
+                          {/* <h5 className="fw-bold">{item.productName}</h5> */}
 
-                          <span className="badge bg-primary">
+                          <span className="fw-bold">
                             {item.category}
                           </span>
 
@@ -157,13 +157,13 @@ const Cart = () => {
                               ))}
                             </div>
                           )} */}
-                          <p>
+                          {/* <p>
                             <strong>Material :</strong> {item.material}
                           </p>
 
                           <p>
                             <strong>Stock :</strong> {item.stock}
-                          </p>
+                          </p> */}
                           {item.qty >= item.stock && (
                             <div
                               className="
@@ -190,21 +190,22 @@ const Cart = () => {
                                   ₹{item.price}
                                 </span>
 
-                                <br />
+                                
 
                                 <span
                                   className="
             text-success
-            fw-bold
+            fw-bold 
           "
                                   style={{
                                     fontSize: "22px",
+                                    margin:"0px 7px 0px 7px"
                                   }}
                                 >
                                   ₹{item.discountPrice}
                                 </span>
 
-                                <br />
+                               
 
                                 <small
                                   className="
@@ -214,12 +215,9 @@ const Cart = () => {
                                 >
                                   Save ₹{item.price - item.discountPrice}
                                 </small>
-
+<br />
                                 <span
-                                  className="
-            badge
-            bg-danger
-            
+                                  className="fs-6
           "
                                 >
                                   {Math.round(
@@ -246,7 +244,7 @@ const Cart = () => {
                             className="
       d-flex
       align-items-center
-      mb-3
+      mb-1
     "
                             style={{ paddingLeft: "30px" }}
                           >
@@ -340,15 +338,15 @@ const Cart = () => {
                   </p>
 
                   <hr />
-
-                  <h3 className="text-primary">Grand Total : ₹{grandTotal}</h3>
-
-                  <p>
+ <p>
                     Delivery :
                     <strong className="ms-2">
                       {deliveryCharge === 0 ? "FREE 🎉" : `₹${deliveryCharge}`}
                     </strong>
                   </p>
+                  <h3 className="text-primary">Grand Total : ₹{grandTotal}</h3>
+
+                 
                 
 
                   <div
