@@ -4,6 +4,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   FaHeart,
   FaHome,
@@ -351,6 +353,13 @@ onError={(e)=>{
       item.selectedSize,
       item.selectedColor
     );
+    toast.success("🛒 Added to Cart!", {
+  position: "top-right",
+  autoClose: 2000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+});
   }}
 >
   Add To Cart
