@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs,  query,  where, } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,8 +8,9 @@ import { FaShoppingCart } from "react-icons/fa";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
-import StarRating from "../admin/pages/StarRating";
 import "react-toastify/dist/ReactToastify.css";
+import StarRating from "../admin/pages/StarRating";
+
 const Home = () => {
   const navigate = useNavigate();
 
@@ -21,15 +22,15 @@ const Home = () => {
   const [sizeError, setSizeError] = useState({});
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-const [categoryFilter, setCategoryFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
 
-const [priceFilter, setPriceFilter] = useState("All");
+  const [priceFilter, setPriceFilter] = useState("All");
 
-const [ratingFilter, setRatingFilter] = useState("All");
+  const [ratingFilter, setRatingFilter] = useState("All");
 
-const [sortBy, setSortBy] = useState("Newest");
+  const [sortBy, setSortBy] = useState("Newest");
   const { addToCart } = useCart();
 
   // -----------------------------
@@ -44,40 +45,42 @@ const [sortBy, setSortBy] = useState("Newest");
         id: doc.id,
         ...doc.data(),
       }));
-    const productsWithRatings = await Promise.all(
-  data.map(async (product) => {
+      const productsWithRatings = await Promise.all(
+        data.map(async (product) => {
+          const reviewQuery = query(
+            collection(db, "reviews"),
+            where("productId", "==", product.id),
+          );
 
-    const reviewQuery = query(
-      collection(db, "reviews"),
-      where("productId", "==", product.id)
-    );
+          const reviewSnap = await getDocs(reviewQuery);
 
-    const reviewSnap = await getDocs(reviewQuery);
+          const reviews = reviewSnap.docs.map((d) => d.data());
 
-    const reviews = reviewSnap.docs.map((d) => d.data());
+          const reviewCount = reviews.length;
 
-    const reviewCount = reviews.length;
+let finalRating = product.rating || 0;
+let finalReviewCount = product.reviewCount || 0;
 
-    const rating =
-      reviewCount > 0
-        ? (
-            reviews.reduce(
-              (sum, r) => sum + Number(r.rating),
-              0
-            ) / reviewCount
-          ).toFixed(1)
-        : 0;
+if (reviewCount > 0) {
+  finalRating =
+    reviews.reduce(
+      (sum, r) => sum + Number(r.rating),
+      0
+    ) / reviewCount;
 
-    return {
-      ...product,
-      rating: Number(rating),
-      reviewCount,
-    };
-  })
-);
+  finalReviewCount = reviewCount;
+}
 
-setProducts(productsWithRatings);
-    setProducts(productsWithRatings);
+return {
+  ...product,
+  rating: Number(finalRating.toFixed(1)),
+  reviewCount: finalReviewCount,
+};
+        }),
+      );
+
+      setProducts(productsWithRatings);
+      
 
       const defaultColors = {};
 
@@ -94,10 +97,7 @@ setProducts(productsWithRatings);
       setLoading(false);
     }
   };
-const categories = [
-  "All",
-  ...new Set(products.map((p) => p.category)),
-];
+  const categories = ["All", ...new Set(products.map((p) => p.category))];
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -123,81 +123,69 @@ const categories = [
   // -----------------------------
 
   const isProductWishlisted = (productId) => {
-  return wishlist.some(
-    (item) => item.productId === productId
-  );
-};
+    return wishlist.some((item) => item.productId === productId);
+  };
 
   // -----------------------------
   // Wishlist Toggle
   // -----------------------------
 
- const toggleWishlist = async (product) => {
-  const selectedSize = selectedSizes[product.id] || "";
+  const toggleWishlist = async (product) => {
+    const selectedSize = selectedSizes[product.id] || "";
 
-  const selectedColor = selectedColors[product.id];
+    const selectedColor = selectedColors[product.id];
 
-  const alreadyWishlisted = isProductWishlisted(product.id);
+    const alreadyWishlisted = isProductWishlisted(product.id);
 
-  // ---------------- REMOVE ----------------
+    // ---------------- REMOVE ----------------
 
-  if (alreadyWishlisted) {
+    if (alreadyWishlisted) {
+      await removeFromWishlist(product.id);
 
-    await removeFromWishlist(      product.id       );
+      toast.info("🗑 Removed from Wishlist");
 
-    toast.info("🗑 Removed from Wishlist");
+      return;
+    }
 
-    return;
-  }
+    // ---------------- SIZE VALIDATION ----------------
 
-  // ---------------- SIZE VALIDATION ----------------
+    if (product.sizes?.length > 0 && !selectedSize) {
+      alert("Please Select Size");
 
-  if (product.sizes?.length > 0 && !selectedSize) {
+      setSizeError((prev) => ({
+        ...prev,
+        [product.id]: true,
+      }));
 
-    alert("Please Select Size");
+      return;
+    }
 
-    setSizeError((prev) => ({
+    // ---------------- COLOR VALIDATION ----------------
+
+    if (product.colors?.length > 0 && !selectedColor) {
+      alert("Please Select Color");
+
+      return;
+    }
+
+    // ---------------- ADD ----------------
+
+    await addToWishlist(product, selectedSize, selectedColor);
+
+    toast.success("❤️ Added to Wishlist");
+
+    setAnimatingWishlist((prev) => ({
       ...prev,
       [product.id]: true,
     }));
 
-    return;
-  }
-
-  // ---------------- COLOR VALIDATION ----------------
-
-  if (product.colors?.length > 0 && !selectedColor) {
-
-    alert("Please Select Color");
-
-    return;
-  }
-
-  // ---------------- ADD ----------------
-
-  await addToWishlist(
-    product,
-    selectedSize,
-    selectedColor
-  );
-
-  toast.success("❤️ Added to Wishlist");
-
-  setAnimatingWishlist((prev) => ({
-    ...prev,
-    [product.id]: true,
-  }));
-
-  setTimeout(() => {
-
-    setAnimatingWishlist((prev) => ({
-      ...prev,
-      [product.id]: false,
-    }));
-
-  }, 700);
-
-};
+    setTimeout(() => {
+      setAnimatingWishlist((prev) => ({
+        ...prev,
+        [product.id]: false,
+      }));
+    }, 700);
+  };
 
   // -----------------------------
   // Delivery Date
@@ -220,67 +208,53 @@ const categories = [
   // Buy Now
   // -----------------------------
 
-const buyNow = (product) => {
-  const selectedSize = selectedSizes[product.id] || "";
-  const selectedColor = selectedColors[product.id];
+  const buyNow = (product) => {
+    const selectedSize = selectedSizes[product.id] || "";
+    const selectedColor = selectedColors[product.id];
 
-  if (product.sizes?.length > 0 && !selectedSize) {
-    alert("Please Select Size");
+    if (product.sizes?.length > 0 && !selectedSize) {
+      alert("Please Select Size");
 
-    setSizeError((prev) => ({
-      ...prev,
-      [product.id]: true,
-    }));
+      setSizeError((prev) => ({
+        ...prev,
+        [product.id]: true,
+      }));
 
-    return;
-  }
+      return;
+    }
 
-  navigate("/whatsapp-order", {
-    state: {
-      buyNow: true,
-      product: {
-        ...product,
-        qty: 1,
-        selectedSize,
-        selectedColor,
+    navigate("/whatsapp-order", {
+      state: {
+        buyNow: true,
+        product: {
+          ...product,
+          qty: 1,
+          selectedSize,
+          selectedColor,
+        },
       },
-    },
+    });
+  };
+  const filteredProducts = products.filter((item) => {
+    const matchSearch =
+      item.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchCategory =
+      categoryFilter === "All" || item.category === categoryFilter;
+
+    const price = Number(item.discountPrice || item.price);
+
+    let matchPrice = true;
+
+    if (priceFilter === "0-500") matchPrice = price <= 500;
+
+    if (priceFilter === "500-1000") matchPrice = price > 500 && price <= 1000;
+
+    if (priceFilter === "1000+") matchPrice = price > 1000;
+
+    return matchSearch && matchCategory && matchPrice;
   });
-};
-const filteredProducts = products.filter((item) => {
- const matchSearch =
-  item.productName
-    ?.toLowerCase()
-    .includes(searchTerm.toLowerCase()) ||
-  item.category
-    ?.toLowerCase()
-    .includes(searchTerm.toLowerCase());
-
-  const matchCategory =
-    categoryFilter === "All" ||
-    item.category === categoryFilter;
-
-  const price =
-    Number(item.discountPrice || item.price);
-
-  let matchPrice = true;
-
-  if (priceFilter === "0-500")
-    matchPrice = price <= 500;
-
-  if (priceFilter === "500-1000")
-    matchPrice =
-      price > 500 && price <= 1000;
-
-  if (priceFilter === "1000+")
-    matchPrice = price > 1000;
-
-  return (
-    matchSearch &&
-    matchCategory &&
-    matchPrice
-  );
-});
   return (
     <div className="">
       {/* ================= NAVBAR ================= */}
@@ -294,105 +268,91 @@ const filteredProducts = products.filter((item) => {
       <div className="products">
         <div className="container">
           <h4 className="m-3 text-black">Latest Products</h4>
-         <div
-  className="card shadow-sm border-0 p-3 mb-4"
-  style={{
-    borderRadius: "15px",
-    background: "#fff",
-  }}
->
-  <div className="row g-3 align-items-center">
+          <div
+            className="card shadow-sm border-0 p-3 mb-4"
+            style={{
+              borderRadius: "15px",
+              background: "#fff",
+            }}
+          >
+            <div className="row g-3 align-items-center">
+              {/* Search */}
+              <div className="col-lg-5 col-md-12">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="🔍 Search Products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    height: "48px",
+                    borderRadius: "12px",
+                    boxShadow: "none",
+                  }}
+                />
+              </div>
 
-    {/* Search */}
-    <div className="col-lg-5 col-md-12">
-      <input
-        type="text"
-        className="form-control"
-        placeholder="🔍 Search Products..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-          boxShadow: "none",
-        }}
-      />
-    </div>
+              {/* Category */}
+              <div className="col-lg-3 col-md-6">
+                <select
+                  className="form-select"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={{
+                    height: "48px",
+                    borderRadius: "12px",
+                    boxShadow: "none",
+                  }}
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      📂 {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-    {/* Category */}
-    <div className="col-lg-3 col-md-6">
-      <select
-        className="form-select"
-        value={categoryFilter}
-        onChange={(e) =>
-          setCategoryFilter(e.target.value)
-        }
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-          boxShadow: "none",
-        }}
-      >
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            📂 {cat}
-          </option>
-        ))}
-      </select>
-    </div>
+              {/* Price */}
+              <div className="col-lg-2 col-md-3">
+                <select
+                  className="form-select"
+                  value={priceFilter}
+                  onChange={(e) => setPriceFilter(e.target.value)}
+                  style={{
+                    height: "48px",
+                    borderRadius: "12px",
+                    boxShadow: "none",
+                  }}
+                >
+                  <option value="All">💰 All Prices</option>
 
-    {/* Price */}
-    <div className="col-lg-2 col-md-3">
-      <select
-        className="form-select"
-        value={priceFilter}
-        onChange={(e) =>
-          setPriceFilter(e.target.value)
-        }
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-          boxShadow: "none",
-        }}
-      >
-        <option value="All">
-          💰 All Prices
-        </option>
+                  <option value="0-500">Under ₹500</option>
 
-        <option value="0-500">
-          Under ₹500
-        </option>
+                  <option value="500-1000">₹500 - ₹1000</option>
 
-        <option value="500-1000">
-          ₹500 - ₹1000
-        </option>
+                  <option value="1000+">Above ₹1000</option>
+                </select>
+              </div>
 
-        <option value="1000+">
-          Above ₹1000
-        </option>
-      </select>
-    </div>
-
-    {/* Reset */}
-    <div className="col-lg-2 col-md-3">
-      <button
-        className="btn btn-dark w-100"
-        style={{
-          height: "48px",
-          borderRadius: "12px",
-        }}
-        onClick={() => {
-          setSearchTerm("");
-          setCategoryFilter("All");
-          setPriceFilter("All");
-        }}
-      >
-        Reset
-      </button>
-    </div>
-
-  </div>
-</div>
+              {/* Reset */}
+              <div className="col-lg-2 col-md-3">
+                <button
+                  className="btn btn-dark w-100"
+                  style={{
+                    height: "48px",
+                    borderRadius: "12px",
+                  }}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setCategoryFilter("All");
+                    setPriceFilter("All");
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
           {loading && <p>Loading...</p>}
 
           {!loading && products.length === 0 && <p>No Products Found</p>}
@@ -422,9 +382,9 @@ const filteredProducts = products.filter((item) => {
                   }}
                 >
                   <div
-                   className={`card shadow dashboard-card ${
-  alreadyWishlisted ? "wishlist-card" : ""
-}`}
+                    className={`card shadow dashboard-card ${
+                      alreadyWishlisted ? "wishlist-card" : ""
+                    }`}
                     onClick={() => {
                       navigate(`/product/${item.id}`, {
                         state: {
@@ -435,39 +395,39 @@ const filteredProducts = products.filter((item) => {
                   >
                     {/* WISHLIST */}
 
-                <button
-  className="btn"
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleWishlist(item);
-  }}
-  style={{
-    width: "42px",
-    height: "42px",
-    position: "absolute",
-    right: "10px",
-    top: "10px",
-    zIndex: 10,
-    borderRadius: "50%",
-    background: "#fff",
-    boxShadow: alreadyWishlisted
-      ? "0 4px 12px rgba(220,53,69,.35)"
-      : "0 2px 8px rgba(0,0,0,.15)",
-    transform: animatingWishlist[item.id]
-      ? "scale(1.2)"
-      : "scale(1)",
-    transition: ".25s ease",
-  }}
->
-  <span
-    style={{
-      fontSize: "22px",
-      transition: ".25s",
-    }}
-  >
-    {alreadyWishlisted ? "❤️" : "🤍"}
-  </span>
-</button>
+                    <button
+                      className="btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(item);
+                      }}
+                      style={{
+                        width: "42px",
+                        height: "42px",
+                        position: "absolute",
+                        right: "10px",
+                        top: "10px",
+                        zIndex: 10,
+                        borderRadius: "50%",
+                        background: "#fff",
+                        boxShadow: alreadyWishlisted
+                          ? "0 4px 12px rgba(220,53,69,.35)"
+                          : "0 2px 8px rgba(0,0,0,.15)",
+                        transform: animatingWishlist[item.id]
+                          ? "scale(1.2)"
+                          : "scale(1)",
+                        transition: ".25s ease",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "22px",
+                          transition: ".25s",
+                        }}
+                      >
+                        {alreadyWishlisted ? "❤️" : "🤍"}
+                      </span>
+                    </button>
 
                     {/* IMAGE */}
 
@@ -506,25 +466,18 @@ const filteredProducts = products.filter((item) => {
                           WebkitBoxOrient: "vertical",
 
                           overflow: "hidden",
-                          marginBottom:"5px"
+                          marginBottom: "5px",
                         }}
                       >
                         {item.description}
                       </p>
-<div className="d-flex justify-content-center align-items-center gap-2 mb-2">
+                      <div className="d-flex justify-content-center align-items-center gap-2 mb-2">
+                        <StarRating rating={item.rating} size={16} />
 
-  <StarRating
-    rating={item.rating}
-    size={16}
-  />
-
-  <small className="text-muted">
-    {item.rating}
-    {" "}
-    ({item.reviewCount})
-  </small>
-
-</div>
+                        <small className="text-muted">
+                          {item.rating} ({item.reviewCount})
+                        </small>
+                      </div>
                       {/* PART-2 START HERE */}
                       {/* SIZE + COLOR */}
 
@@ -540,8 +493,6 @@ const filteredProducts = products.filter((item) => {
                                   : ""
                               }`}
                               value={selectedSizes[item.id] || ""}
-                              
-                              
                               onClick={(e) => e.stopPropagation()}
                               onChange={(e) =>
                                 handleSizeSelect(item.id, e.target.value)
@@ -613,7 +564,13 @@ const filteredProducts = products.filter((item) => {
                               ₹{item.price}
                             </span>
 
-                            <span style={{marginLeft:"5px",fontSize:"14px",color:"#7d3ccf"}}>
+                            <span
+                              style={{
+                                marginLeft: "5px",
+                                fontSize: "14px",
+                                color: "#7d3ccf",
+                              }}
+                            >
                               {Math.round(
                                 ((item.price - item.discountPrice) /
                                   item.price) *
@@ -645,42 +602,45 @@ const filteredProducts = products.filter((item) => {
                       <div className="d-flex gap-2 mt-1">
                         {/* ADD CART */}
 
-                       <button
-  className="btn btn-warning btn-sm flex-fill"
-  onClick={(e) => {
-    e.stopPropagation();
+                        <button
+                          className="btn btn-warning btn-sm flex-fill"
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-    const selectedSize = selectedSizes[item.id] || "";
-    const selectedColor = selectedColors[item.id];
+                            const selectedSize = selectedSizes[item.id] || "";
+                            const selectedColor = selectedColors[item.id];
 
-    // Size validation
-    if (item.sizes?.length > 0 && !selectedSize) {
-      alert("Please Select Size");
+                            // Size validation
+                            if (item.sizes?.length > 0 && !selectedSize) {
+                              alert("Please Select Size");
 
-      setSizeError((prev) => ({
-        ...prev,
-        [item.id]: true,
-      }));
+                              setSizeError((prev) => ({
+                                ...prev,
+                                [item.id]: true,
+                              }));
 
-      return;
-    }
+                              return;
+                            }
 
-    // Color validation
-    if (item.colors?.length > 0 && !selectedColor) {
-      alert("Please Select Color");
-      return;
-    }
+                            // Color validation
+                            if (item.colors?.length > 0 && !selectedColor) {
+                              alert("Please Select Color");
+                              return;
+                            }
 
-    addToCart(
-      item,
-      selectedSize,
-      selectedColor
-    );
-  }}
->
-  <FaShoppingCart className="me-1" />
-  Cart
-</button>
+                            addToCart(item, selectedSize, selectedColor);
+                            toast.success("🛒 Added to Cart!", {
+  position: "top-right",
+  autoClose: 2000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+});
+                          }}
+                        >
+                          <FaShoppingCart className="me-1" />
+                          Cart
+                        </button>
 
                         {/* BUY NOW */}
 
