@@ -305,11 +305,12 @@ td.action-buttons svg:last-child {
     background: #f9f9f9;
 }
 .btn-log {
-    border: 0px solid red !important;
-    background: #fff !important;
-    color: #3e25c3 !important;
-    padding: 3px 11px !important;
+    border: 2px solid #ffffff !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    padding: 5px 23px !important;
     font-weight: bold !important;
+    border-radius: 24px !important;
 }
 .e-text {
     color: #edff00;
