@@ -5,16 +5,22 @@ import {
   doc,
   updateDoc,
   Timestamp,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import Navbar from "./Navbar";
 import {
   FaCheck,
   FaBoxOpen,
-  FaShippingFast,
-  FaHome,
+  FaCog,
+  FaTruck,
+  FaMapMarkerAlt,
+  FaGift,
 } from "react-icons/fa";
 import generateInvoice from "../utils/generateInvoice";
+// import DeliveryTruck from "../components/DeliveryTruck";
+import DeliveryCountdown from "../components/DeliveryCountdown";
+
 
 const statusSteps = [
   {
@@ -23,15 +29,19 @@ const statusSteps = [
   },
   {
     label: "Processing",
-    icon: <FaCheck />,
+    icon: <FaCog />,
   },
   {
     label: "Shipped",
-    icon: <FaShippingFast />,
+    icon: <FaTruck />,
+  },
+  {
+    label: "Out for Delivery",
+    icon: <FaMapMarkerAlt />,
   },
   {
     label: "Delivered",
-    icon: <FaHome />,
+    icon: <FaGift />,
   },
 ];
 
@@ -46,6 +56,9 @@ const MyOrders = () => {
   const [cancelReason, setCancelReason] = useState("");
 
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showHidden, setShowHidden] = useState(false);
+  const [showTracking, setShowTracking] = useState({});
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -90,6 +103,68 @@ const MyOrders = () => {
       console.log(error);
     }
   };
+  const activeOrders = orders.filter(
+  (order) => !order.hidden
+);
+
+const hiddenOrders = orders.filter(
+  (order) => order.hidden
+);
+
+const hideOrder = async (id) => {
+  try {
+    await updateDoc(doc(db, "orders", id), {
+      hidden: true,
+    });
+
+    setOrders((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, hidden: true }
+          : item
+      )
+    );
+
+    toast.success("Order Hidden");
+  } catch (err) {
+    console.log(err);
+  }
+};
+const unHideOrder = async (id) => {
+  try {
+    await updateDoc(doc(db, "orders", id), {
+      hidden: false,
+    });
+
+    setOrders((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, hidden: false }
+          : item
+      )
+    );
+
+    toast.success("Order Restored");
+  } catch (err) {
+    console.log(err);
+  }
+};
+const deleteOrder = async (id) => {
+  if (!window.confirm("Delete this order permanently?"))
+    return;
+
+  try {
+    await deleteDoc(doc(db, "orders", id));
+
+    setOrders((prev) =>
+      prev.filter((item) => item.id !== id)
+    );
+
+    toast.success("Order Deleted");
+  } catch (err) {
+    console.log(err);
+  }
+};
   return (
     <>
       {" "}
@@ -98,57 +173,54 @@ const MyOrders = () => {
         <h2 className="fw-bold mb-4">My Orders</h2>
 
         {/* Summary Cards */}
-        <div className="row mb-4 total">
-          <div className="col-md-3 mb-3">
-            <div className="card border-0">
-              <div className="card-body text-center">
-                <h3 className="text-primary">{orders.length}</h3>
-                <small>Total Orders</small>
-              </div>
-            </div>
-          </div>
+        <div className="row mb-4">
 
-          <div className="col-md-3 mb-3">
-            <div className="card border-0">
-              <div className="card-body text-center">
-                <h3 className="text-success">
-                  {orders.filter((o) => o.orderStatus === "Delivered").length}
-                </h3>
-                <small>Delivered</small>
-              </div>
-            </div>
-          </div>
+  <div className="col-md-4">
+    <div className="card text-center shadow-sm">
+      <div className="card-body">
+        <h6>Total Orders</h6>
+        <h3>{orders.length}</h3>
+      </div>
+    </div>
+  </div>
 
-          <div className="col-md-3 mb-3">
-            <div className="card border-0">
-              <div className="card-body text-center">
-                <h3 className="text-warning">
-                  {orders.filter((o) => o.orderStatus !== "Delivered").length}
-                </h3>
-                <small>Pending</small>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3 mb-3">
-            <div className="card border-0">
-              <div className="card-body text-center">
-                <h3 className="text-danger">
-                  {orders.filter((o) => o.orderStatus === "Cancelled").length}
-                </h3>
+  <div className="col-md-4">
+    <div className="card text-center shadow-sm">
+      <div className="card-body">
+        <h6>Active Orders</h6>
+        <h3>{activeOrders.length}</h3>
+      </div>
+    </div>
+  </div>
 
-                <small>Cancelled Orders</small>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div className="col-md-4">
+    <div className="card text-center shadow-sm">
+      <div className="card-body">
+        <h6>Hidden Orders</h6>
+
+        <button
+          className="btn btn-outline-primary btn-sm mt-2"
+          onClick={() =>
+            setShowHidden(!showHidden)
+          }
+        >
+          {showHidden
+            ? "Hide List"
+            : `View (${hiddenOrders.length})`}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
         <div className="row">
           {orders.length === 0 ? (
             <div className="text-center py-5">
               <h4>No Orders Found</h4>
             </div>
           ) : (
-            orders.map((order) => (
-              <div className="col-md-4">
+            activeOrders.map((order) => (
+              <div className="col-md-6">
                 <div
                   key={order.id}
                   className="card border-0  mb-4"
@@ -157,39 +229,47 @@ const MyOrders = () => {
                   }}
                 >
                   {/* Header */}
-                  <div className="card-header bg-white">
-                    <div className="d-flex justify-content-between align-items-center flex-wrap">
-                      <div style={{ textAlign: "left" }}>
-                        <h6 className="mb-0">Order #{order.id.slice(0, 8)}</h6>
+                 <div className="card-header bg-white py-2">
+  <div className="d-flex justify-content-between align-items-start">
 
-                        <small className="text-muted">
-                          {order.createdAt
-                            ? new Date(
-                                order.createdAt.seconds * 1000,
-                              ).toLocaleDateString("en-IN")
-                            : "Recently"}
-                        </small>
-                      </div>
+    <div>
+      <h6 className="fw-bold mb-1">
+        Order #{order.id.slice(0, 8)}
+      </h6>
 
-                      <div className="text-end">
-                        <h6 className="mb-0 text-success">
-                          ₹{Number(order.totalAmount || 0).toLocaleString()}
-                        </h6>
+      <small className="text-muted">
+        {order.createdAt
+          ? new Date(order.createdAt.seconds * 1000).toLocaleDateString(
+              "en-IN"
+            )
+          : "Recently"}
+      </small>
+    </div>
 
-                        <span
-                          className={`badge ${
-                            order.orderStatus === "Delivered"
-                              ? "bg-success"
-                              : order.orderStatus === "Cancelled"
-                                ? "bg-danger"
-                                : "bg-warning text-dark"
-                          }`}
-                        >
-                          {order.orderStatus}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+    <div className="text-end">
+
+      <h5 className="text-success mb-1">
+        ₹{Number(order.totalAmount || 0).toLocaleString()}
+      </h5>
+
+      <span
+        className={`badge ${
+          order.orderStatus === "Delivered"
+            ? "bg-success"
+            : order.orderStatus === "Cancelled"
+            ? "bg-danger"
+            : "bg-warning text-dark"
+        }`}
+      >
+        {order.orderStatus}
+      </span>
+
+    
+
+    </div>
+
+  </div>
+</div>
 
                   {/* Products */}
                   <div className="card-body">
@@ -203,8 +283,8 @@ const MyOrders = () => {
                             src={product.imagePath}
                             alt={product.productName}
                             style={{
-                              width: "90px",
-                              height: "90px",
+                              width: "70px",
+                              height: "70px",
                               objectFit: "cover",
                               borderRadius: "10px",
                             }}
@@ -214,7 +294,7 @@ const MyOrders = () => {
                             className="ms-3 flex-grow-1"
                             style={{ textAlign: "left" }}
                           >
-                            <h6 className="fw-bold mb-1">
+                            <h6 className="fw-bold mb-1" style={{ fontSize: "15px" }}>
                               {product.productName}
                             </h6>
 
@@ -249,12 +329,12 @@ const MyOrders = () => {
                             )}
                           </div>
 
-                          <h5 className="text-success mb-0">
+                        <h6 className="text-success fw-bold mb-0">
                             ₹
                             {Number(
                               product.discountPrice || product.price || 0,
                             ).toLocaleString()}
-                          </h5>
+                          </h6>
                         </div>
                       );
                     })}
@@ -262,34 +342,82 @@ const MyOrders = () => {
 
                   {/* Address */}
                   <div className="card-footer bg-light">
-                    <h6 className="fw-bold mb-1">{order.customerName}</h6>
+         <div
+  className="row g-3 align-items-center mb-3"
+>
 
-                    <div>📞 {order.mobile}</div>
+  <div className="col-lg-8">
 
-                    <div>📍 {order.address}</div>
+    <h6 className="fw-bold mb-1">
+      👤 {order.customerName}
+    </h6>
 
-                    <div>
-                      {order.city}, {order.state} - {order.pincode}
-                    </div>
+    <div style={{ fontSize: "14px" }}>
+      📞 {order.mobile}
+    </div>
 
-                    <div className="mt-2">
-                      Payment:
-                      <strong className="ms-1">{order.paymentStatus}</strong>
-                    </div>
-                    <div className="mt-3 d-flex gap-2">
-                      {order.orderStatus !== "Cancelled" &&
-                        order.orderStatus !== "Delivered" && (
-                          <button
-                            className="btn btn-danger btn-sm w-100"
-                            onClick={() => {
-                              setSelectedOrder(order.id);
-                              setShowCancelModal(true);
-                            }}
-                          >
-                            ❌ Cancel Order
-                          </button>
-                        )}
-                    </div>
+    <div style={{ fontSize: "14px" }}>
+      📍 {order.address}
+    </div>
+
+    <div
+      className="text-muted"
+      style={{ fontSize: "13px" }}
+    >
+      {order.city}, {order.state} - {order.pincode}
+    </div>
+
+    <div className="mt-2">
+
+      <span className="badge bg-success">
+        {order.paymentStatus}
+      </span>
+
+    </div>
+
+  </div>
+
+ <div className="col-lg-4">
+  <div className="mt-2">
+        <button
+          className="btn btn-outline-secondary btn-sm w-100 mb-2"
+          onClick={() => hideOrder(order.id)}
+        >
+          👁 Hide
+        </button>
+      </div>
+  {order.orderStatus !== "Cancelled" &&
+    order.orderStatus !== "Delivered" && (
+      <button
+        className="btn btn-danger btn-sm w-100"
+        onClick={() => {
+          setSelectedOrder(order.id);
+          setShowCancelModal(true);
+        }}
+      >
+        ❌ Cancel Order
+      </button>
+    )}
+
+  {order.orderStatus !== "Cancelled" && (
+    <button
+      className="btn btn-outline-success btn-sm w-100 mt-2"
+      onClick={() =>
+        setShowTracking((prev) => ({
+          ...prev,
+          [order.id]: !prev[order.id],
+        }))
+      }
+    >
+      {showTracking[order.id]
+        ? "▲ Hide Tracking"
+        : "📍 Track My Order"}
+    </button>
+  )}
+
+</div>
+
+</div>
                     {order.orderStatus === "Cancelled" && (
                       <div className="mt-2">
                         <div className="alert alert-danger mb-2">
@@ -314,60 +442,244 @@ const MyOrders = () => {
                       </div>
                     )}
 
-                   {order.orderStatus !== "Cancelled" && (
-  <div className="mt-4">
+                  {order.orderStatus !== "Cancelled" &&
+  showTracking[order.id] && (
+  <div className="mt-4" style={{textAlign:"left"}}>
 
-    <h6 className="fw-bold mb-3">
+    {/* <h6 className="fw-bold mb-3">
       🚚 Order Timeline
     </h6>
+<div className="progress mb-3" style={{ height: "10px" }}>
+  <div
+    className="progress-bar bg-success progress-bar-striped progress-bar-animated"
+    style={{
+      width: `${
+        ((getStatusIndex(order.orderStatus) + 1) /
+          statusSteps.length) *
+        100
+      }%`,
+    }}
+  />
+</div> */}
+{/* <DeliveryTruck status={order.orderStatus} /> */}
+<div className="mt-3">
 
-    <div className="timeline">
+  {statusSteps.map((step, index) => {
 
-      {statusSteps.map((step, index) => {
-        const active = index <= getStatusIndex(order.orderStatus);
-        const current = index === getStatusIndex(order.orderStatus);
+    const statusIndex = getStatusIndex(order.orderStatus);
 
-        return (
+    const completed = index < statusIndex;
+    const current = index === statusIndex;
+
+    return (
+
+      <div
+        key={step.label}
+        className="d-flex"
+      >
+
+        {/* LEFT */}
+
+        <div
+          className="d-flex flex-column align-items-center"
+          style={{ width: "42px" }}
+        >
+
           <div
-            className="timeline-item"
-            key={step.label}
+            className={`timeline-dot
+              ${completed ? "active-dot" : ""}
+              ${current ? "current-dot" : ""}`}
           >
 
-            <div
-              className={`timeline-circle ${
-                active ? "active" : ""
-              } ${current ? "current" : ""}`}
-            >
-              {active ? (
-                <FaCheck />
-              ) : (
-                step.icon
-              )}
-            </div>
+            {completed ? (
 
-            {index !== statusSteps.length - 1 && (
-              <div
-                className={`timeline-line ${
-                  index < getStatusIndex(order.orderStatus)
-                    ? "active"
-                    : ""
-                }`}
-              />
+              <FaCheck size={12} />
+
+            ) : (
+
+              step.icon
+
             )}
 
-            <small
-              className={`timeline-label ${
-                active ? "text-success" : "text-muted"
+          </div>
+
+          {index !== statusSteps.length - 1 && (
+
+            <div
+              className={`timeline-bar ${
+                index < statusIndex
+                  ? "timeline-bar-active"
+                  : ""
               }`}
-            >
-              {step.label}
+            />
+
+          )}
+
+        </div>
+
+        {/* RIGHT */}
+
+        <div className="ms-3 pb-4">
+
+          <h6
+            className={`mb-1 ${
+              completed || current
+                ? "text-success fw-bold"
+                : "text-muted"
+            }`}
+          >
+            {step.label}
+          </h6>
+
+          {current && (
+
+            <small className="text-muted">
+
+              {step.label === "Pending" &&
+                "📦 Your order has been placed successfully."}
+
+              {step.label === "Processing" &&
+                "👨‍💻 Seller is preparing your order."}
+
+              {step.label === "Shipped" &&
+                "🚚 Your parcel is on the way."}
+
+              {step.label === "Out for Delivery" &&
+                "📍 Delivery partner is near your location."}
+
+              {step.label === "Delivered" &&
+                "🎉 Order delivered successfully."}
+
             </small>
 
-          </div>
-        );
-      })}
+          )}
+
+        </div>
+
+      </div>
+
+    );
+
+  })}
+
+</div>
+<div
+  className="card border-0 shadow-sm mt-3"
+  style={{
+    background: "#fafafa",
+    borderRadius: "12px",
+  }}
+>
+  <div className="card-body py-3">
+
+    <div className="row align-items-center">
+
+      {/* LEFT */}
+
+      <div className="col-md-7">
+
+        <h6 className="fw-bold mb-2 text-success">
+          🚚 Delivery Status
+        </h6>
+
+        {order.orderStatus === "Pending" && (
+          <>
+            <h6 className="mb-1">
+              📦 Order Placed
+            </h6>
+
+            <small className="text-muted">
+              We've received your order.
+            </small>
+          </>
+        )}
+
+        {order.orderStatus === "Processing" && (
+          <>
+            <h6 className="mb-1">
+              👨‍💻 Preparing Order
+            </h6>
+
+            <small className="text-muted">
+              Packing your jewellery.
+            </small>
+          </>
+        )}
+
+        {order.orderStatus === "Shipped" && (
+          <>
+            <h6 className="mb-1">
+              🚚 Order Shipped
+            </h6>
+
+            <small className="text-muted">
+              Package is on the way.
+            </small>
+          </>
+        )}
+
+        {order.orderStatus === "Out for Delivery" && (
+          <>
+            <h6 className="mb-1">
+              📍 Out for Delivery
+            </h6>
+
+            <small className="text-muted">
+              Delivery partner is nearby.
+            </small>
+          </>
+        )}
+
+        {order.orderStatus === "Delivered" && (
+          <>
+            <h6 className="mb-1">
+              🎉 Delivered
+            </h6>
+
+            <small className="text-muted">
+              Thank you for shopping.
+            </small>
+          </>
+        )}
+
+      </div>
+
+      {/* RIGHT */}
+
+      <div className="col-md-5 text-center">
+
+        <div
+          style={{
+            fontSize: "13px",
+            color: "#777",
+          }}
+        >
+          Estimated Delivery
+        </div>
+
+        <h6 className="fw-bold text-success mb-2">
+
+          {order.deliveryDate
+            ?.toDate()
+            .toLocaleDateString("en-IN", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })}
+
+        </h6>
+
+        <DeliveryCountdown
+          deliveryDate={order.deliveryDate}
+          status={order.orderStatus}
+        />
+
+      </div>
+
     </div>
 
+  </div>
+</div>
   </div>
 )}
 
@@ -383,7 +695,7 @@ const MyOrders = () => {
 
   </div>
 )}
-                    <div className="mt-2">
+                    {/* <div className="mt-2">
                       🚚 Delivery:
                       <strong className="ms-2 text-success">
                         {order.deliveryDate
@@ -397,7 +709,14 @@ const MyOrders = () => {
                               })
                           : "Updating..."}
                       </strong>
-                    </div>
+                    </div> */}
+
+                    {/* <button
+  className="btn btn-outline-secondary btn-sm"
+  onClick={() => hideOrder(order.id)}
+>
+  Hide Order
+</button> */}
                   </div>
                 </div>
               </div>
@@ -464,6 +783,50 @@ const MyOrders = () => {
             </div>
           </div>
         )}
+        {showHidden && (
+  <>
+    <hr />
+
+    <h5 className="mb-3">
+      Hidden Orders
+    </h5>
+
+    {hiddenOrders.map((order) => (
+
+      <div
+        className="card mb-3"
+        key={order.id}
+      >
+
+        {/* Existing Order UI */}
+
+        <div className="mt-2">
+
+          <button
+            className="btn btn-success btn-sm"
+            onClick={() =>
+              unHideOrder(order.id)
+            }
+          >
+            Restore
+          </button>
+
+          <button
+            className="btn btn-danger btn-sm ms-2"
+            onClick={() =>
+              deleteOrder(order.id)
+            }
+          >
+            Delete Permanently
+          </button>
+
+        </div>
+
+      </div>
+
+    ))}
+  </>
+)}
       </div>
     </>
   );
