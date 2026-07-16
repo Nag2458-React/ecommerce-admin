@@ -97,13 +97,15 @@ fetchOrders();
                       >
                         <option>Pending</option>
 
-                        <option>Processing</option>
+<option>Processing</option>
 
-                        <option>Shipped</option>
+<option>Shipped</option>
 
-                        <option>Delivered</option>
+<option>Out for Delivery</option>
 
-                        <option>Cancelled</option>
+<option>Delivered</option>
+
+<option>Cancelled</option>
                       </select>
                     </div>
 
