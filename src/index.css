@@ -270,6 +270,9 @@ td.action-buttons svg:last-child {
 }
 .navbar{
   background: #3e25c3 !important;
+  position: sticky !important;
+  z-index: 9999;
+  top: 0;
 }
 .navbar .nav-link{
   color: #fff;
@@ -308,7 +311,7 @@ td.action-buttons svg:last-child {
     border: 2px solid #ffffff !important;
     background: transparent !important;
     color: #ffffff !important;
-    padding: 5px 23px !important;
+    padding: 5px 10px !important;
     font-weight: bold !important;
     border-radius: 24px !important;
 }
