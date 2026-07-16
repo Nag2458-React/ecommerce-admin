@@ -15,7 +15,7 @@ import {
 
 import { db } from "../firebase/firebase";
 import { auth } from "../firebase/firebase";
-import logo from "../../public/images/logo.png"
+// import logo from "../../public/images/logo.png"
 import {
   FaHome,
   FaHeart,
@@ -96,7 +96,11 @@ const [showNotifications, setShowNotifications] = useState(false);
     <nav className="navbar navbar-expand-lg navbar-dark shadow-sm p-0">
       <div className="container">
         <NavLink className="navbar-brand fw-bold p-0" to="/" style={{margin:"0 "}}>
-         <img src={logo} style={{width:"80px"}}></img> 
+        <img
+  src="/images/logo.png"
+  alt="Logo"
+  style={{ width: "80px" }}
+/>
         </NavLink>
 
         <button
