@@ -10,10 +10,10 @@ import { db } from "../../firebase/firebase";
 import AdminSidebar from "../components/AdminSidebar";
 import { sendOrderNotification } from "../../services/notificationService";
 
-
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -24,7 +24,7 @@ const AdminOrders = () => {
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    }));
+           }));
 
     setOrders(data);
   };
@@ -32,16 +32,16 @@ const AdminOrders = () => {
   const updateOrderStatus = async (orderId, status) => {
     try {
       await updateDoc(doc(db, "orders", orderId), {
-  orderStatus: status,
-});
+        orderStatus: status,
+      });
 
-const order = orders.find((o) => o.id === orderId);
+      const order = orders.find((o) => o.id === orderId);
 
-if (order) {
-  await sendOrderNotification(order, status);
-}
+      if (order) {
+        await sendOrderNotification(order, status);
+      }
 
-fetchOrders();
+      fetchOrders();
     } catch (error) {
       console.log(error);
     }
@@ -62,6 +62,32 @@ fetchOrders();
     }
   };
 
+ const filteredOrders = orders.filter((order) => {
+  const search = searchTerm.toLowerCase();
+
+  const matchesSearch =
+    order.customerName?.toLowerCase().includes(search) ||
+    order.mobile?.toString().includes(search) ||
+    order.id?.toLowerCase().includes(search);
+
+  const matchesStatus =
+    statusFilter === "All" ||
+    order.orderStatus === statusFilter;
+
+  return matchesSearch && matchesStatus;
+});
+
+const statusCounts = {
+  All: orders.length,
+  Pending: orders.filter((o) => o.orderStatus === "Pending").length,
+  Processing: orders.filter((o) => o.orderStatus === "Processing").length,
+  Shipped: orders.filter((o) => o.orderStatus === "Shipped").length,
+  "Out for Delivery": orders.filter(
+    (o) => o.orderStatus === "Out for Delivery"
+  ).length,
+  Delivered: orders.filter((o) => o.orderStatus === "Delivered").length,
+  Cancelled: orders.filter((o) => o.orderStatus === "Cancelled").length,
+};
   return (
     <div className="d-flex">
       <div style={{ width: "20%", height: "100vh" }}>
@@ -70,12 +96,48 @@ fetchOrders();
 
       <div className="container py-4" style={{ width: "80%" }}>
         <h2 className="mb-4 fw-bold">📦 Placed Orders</h2>
+        <div className="row mb-4">
+  <div className="col-md-5 mb-3">
+    <input
+      type="text"
+      className="form-control"
+      placeholder="🔍 Search by Customer / Mobile / Order ID"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+  </div>
 
+  <div className="d-flex flex-wrap gap-2 mb-4">
+
+  {[
+    "All",
+    "Pending",
+    "Processing",
+    "Shipped",
+    "Out for Delivery",
+    "Delivered",
+    "Cancelled",
+  ].map((status) => (
+    <button
+      key={status}
+      className={`btn ${
+        statusFilter === status
+          ? "btn-danger"
+          : "btn-outline-primary"
+      }`}
+      onClick={() => setStatusFilter(status)}
+    >
+      {status} ({statusCounts[status]})
+    </button>
+  ))}
+
+</div>
+</div>
         <div className="row">
           {orders.length === 0 ? (
             <h4>No Orders Found</h4>
           ) : (
-            orders.map((order) => (
+            filteredOrders.map((order) => (
               <div className="col-md-4" key={order.id}>
                 <div className="card shadow-sm border-0 mb-4">
                   <div className="card-header bg-light">
@@ -97,15 +159,15 @@ fetchOrders();
                       >
                         <option>Pending</option>
 
-<option>Processing</option>
+                        <option>Processing</option>
 
-<option>Shipped</option>
+                        <option>Shipped</option>
 
-<option>Out for Delivery</option>
+                        <option>Out for Delivery</option>
 
-<option>Delivered</option>
+                        <option>Delivered</option>
 
-<option>Cancelled</option>
+                        <option>Cancelled</option>
                       </select>
                     </div>
 
