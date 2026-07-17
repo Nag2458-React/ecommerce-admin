@@ -180,37 +180,86 @@ const Profile = () => {
     }
   };
 
-  const handleImage = (e) => {
-    const file = e.target.files[0];
+const handleImage = (e) => {
+  const file = e.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    const reader = new FileReader();
+  const currentUser = auth.currentUser;
 
-    reader.onloadend = async () => {
+  if (!currentUser) {
+    alert("User not logged in");
+    return;
+  }
+
+  // Optional: Very large image warning (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Please select an image below 5 MB.");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const img = new Image();
+
+    img.onload = async () => {
       try {
-        const image = reader.result;
+        // Resize
+        const MAX_WIDTH = 300;
+        const MAX_HEIGHT = 300;
 
-        setProfileImage(image);
+        let width = img.width;
+        let height = img.height;
 
-        const user = auth.currentUser;
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = height * (MAX_WIDTH / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = width * (MAX_HEIGHT / height);
+            height = MAX_HEIGHT;
+          }
+        }
 
-        if (!user) return;
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
 
-        await updateDoc(doc(db, "users", user.uid), {
-          profileImage: image,
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress to JPEG (quality 0.6)
+        const compressedImage = canvas.toDataURL("image/jpeg", 0.6);
+
+        console.log(
+          "Compressed Size:",
+          Math.round(compressedImage.length / 1024),
+          "KB"
+        );
+
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          profileImage: compressedImage,
         });
 
-        loadProfile();
+        setProfileImage(compressedImage);
 
-        alert("Profile Picture Updated");
+        alert("Profile picture updated successfully.");
+
+        loadProfile();
       } catch (err) {
         console.log(err);
+        alert(err.message);
       }
     };
 
-    reader.readAsDataURL(file);
+    img.src = reader.result;
   };
+
+  reader.readAsDataURL(file);
+};
 
   const changePassword = async () => {
     if (!currentPassword || !newPassword) {
