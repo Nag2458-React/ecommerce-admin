@@ -57,7 +57,7 @@
 }
 
 body{
-  background:url(/public/images/bg11.jpg);
+  background: url("/images/bg11.jpg") center/cover fixed;
   background-size:cover;
   font-family:Arial, sans-serif;
   min-height: 100vh;
@@ -711,4 +711,232 @@ transform:scale(1);
   100% {
     transform: scale(1);
   }
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+/* =====================================================
+                 DARK MODE
+===================================================== */
+
+/* Background Overlay */
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,0);
+  transition:.35s;
+  pointer-events:none;
+  z-index:-1;
+}
+
+body[data-theme="dark"]::before{
+  background:rgba(0,0,0,.72);
+}
+
+/* Navbar */
+
+body[data-theme="dark"] .navbar{
+  background:#111827 !important;
+}
+
+/* Footer */
+
+body[data-theme="dark"] footer{
+  background:#111827 !important;
+}
+
+/* Cards */
+
+body[data-theme="dark"] .card{
+  background:#1e293b !important;
+  color:#fff !important;
+  border-color:#374151 !important;
+}
+
+/* Card Header */
+
+body[data-theme="dark"] .card-header{
+  background:#0f172a !important;
+  color:#fff !important;
+}
+
+/* Card Body */
+
+body[data-theme="dark"] .card-body{
+  color:#fff !important;
+}
+
+/* Tables */
+
+body[data-theme="dark"] table{
+  color:#fff;
+}
+
+body[data-theme="dark"] table td{
+  background:#1f2937 !important;
+  color:#fff;
+}
+
+body[data-theme="dark"] table th{
+  background:#312e81 !important;
+}
+
+/* Forms */
+
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] select{
+  background:#1f2937 !important;
+  color:#fff !important;
+  border:1px solid #555 !important;
+}
+
+body[data-theme="dark"] input::placeholder,
+body[data-theme="dark"] textarea::placeholder{
+  color:#bbb;
+}
+
+/* Bootstrap Form Control */
+
+body[data-theme="dark"] .form-control{
+  background:#1f2937 !important;
+  color:#fff !important;
+}
+
+body[data-theme="dark"] .form-select{
+  background:#1f2937 !important;
+  color:#fff !important;
+}
+
+/* List Group */
+
+body[data-theme="dark"] .list-group-item{
+  background:#1e293b !important;
+  color:#fff !important;
+  border-color:#374151 !important;
+}
+
+/* Dropdown */
+
+body[data-theme="dark"] .dropdown-menu{
+  background:#1e293b !important;
+}
+
+body[data-theme="dark"] .dropdown-item{
+  color:#fff !important;
+}
+
+body[data-theme="dark"] .dropdown-item:hover{
+  background:#334155 !important;
+}
+
+/* Modal */
+
+body[data-theme="dark"] .modal-content{
+  background:#1e293b !important;
+  color:#fff !important;
+}
+
+body[data-theme="dark"] .modal-header,
+body[data-theme="dark"] .modal-footer{
+  border-color:#374151 !important;
+}
+
+/* Alerts */
+
+body[data-theme="dark"] .alert{
+  color:#fff;
+}
+
+/* Text */
+
+body[data-theme="dark"] p,
+body[data-theme="dark"] h1,
+body[data-theme="dark"] h2,
+body[data-theme="dark"] h3,
+body[data-theme="dark"] h4,
+body[data-theme="dark"] h5,
+body[data-theme="dark"] h6,
+body[data-theme="dark"] span,
+body[data-theme="dark"] label,
+body[data-theme="dark"] small{
+  color:#fff !important;
+}
+
+/* Links */
+
+body[data-theme="dark"] a{
+  color:#fff;
+}
+
+/* Product Details */
+
+body[data-theme="dark"] .pd-card h5,
+body[data-theme="dark"] .sp h5{
+  background:#334155;
+  color:#fff !important;
+}
+
+/* Wishlist */
+
+body[data-theme="dark"] .wishlist-card{
+  background:#1e293b !important;
+}
+
+/* Total Card */
+
+body[data-theme="dark"] .total .card{
+  background:#1e293b !important;
+}
+
+/* Dashboard */
+
+body[data-theme="dark"] .dashboard-card{
+  background:#1e293b !important;
+}
+
+/* Timeline */
+
+body[data-theme="dark"] .timeline-circle{
+  background:#374151;
+  color:#fff;
+}
+
+body[data-theme="dark"] .timeline-line{
+  background:#4b5563;
+}
+
+/* Notification */
+
+body[data-theme="dark"] .badge{
+  color:#fff;
+}
+
+/* Smooth Animation */
+
+body,
+.card,
+.navbar,
+footer,
+input,
+textarea,
+select,
+table,
+.list-group-item,
+.modal-content{
+  transition:.35s ease;
 }
