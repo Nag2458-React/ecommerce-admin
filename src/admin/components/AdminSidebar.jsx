@@ -75,6 +75,12 @@ const AdminSidebar = () => {
               <span className="ms-2">Recent Products</span>
             </Link>
           </li>
+           <li className="nav-item mb-2">
+            <Link to="/admin/orders" className="nav-link text-white">
+              <FaShoppingCart />
+              <span className="ms-2">Placed Orders</span>
+            </Link>
+          </li>
        <li className="nav-item mb-2">
             <Link to="/apicruds" className="nav-link text-white">
               <FaCog />
@@ -107,12 +113,7 @@ const AdminSidebar = () => {
 
           {/* Orders */}
 
-          <li className="nav-item mb-2">
-            <Link to="/admin/orders" className="nav-link text-white">
-              <FaShoppingCart />
-              <span className="ms-2">Placed Orders</span>
-            </Link>
-          </li>
+         
 
           {/* Customers */}
 
