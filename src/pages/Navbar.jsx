@@ -7,6 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { signOut } from "firebase/auth";
 import { useTheme } from "../context/ThemeContext";
 import { FaMoon, FaSun } from "react-icons/fa";
+import { Capacitor } from "@capacitor/core";
 import {
   collection,
   query,
@@ -48,6 +49,8 @@ const [showNotifications, setShowNotifications] = useState(false);
 const [showProfileMenu, setShowProfileMenu] = useState(false);
 const [userName, setUserName] = useState("");
 const [profileImage, setProfileImage] = useState("");
+const [isNativeApp, setIsNativeApp] = useState(false);
+
 
   useEffect(() => {
     const totalQty = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
@@ -101,6 +104,12 @@ useEffect(() => {
   });
 
   return () => unsubscribeAuth();
+}, []);
+
+useEffect(() => {
+  setIsNativeApp(Capacitor.isNativePlatform());
+
+  console.log("Native App:", Capacitor.isNativePlatform());
 }, []);
 
   const handleLogout = async () => {
@@ -566,7 +575,17 @@ useEffect(() => {
 >
   {theme === "light" ? <FaMoon /> : <FaSun />}
 </button>
-             <a
+             {/* <a
+    href="https://github.com/Nag2458-React/ecommerce-admin/releases/latest/download/app-debug.apk"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="download-app-btn ms-2"
+  >
+    <FaDownload className="me-1 download-icon" />
+    Download App
+  </a> */}
+  {!isNativeApp && (
+  <a
     href="https://github.com/Nag2458-React/ecommerce-admin/releases/latest/download/app-debug.apk"
     target="_blank"
     rel="noopener noreferrer"
@@ -575,6 +594,7 @@ useEffect(() => {
     <FaDownload className="me-1 download-icon" />
     Download App
   </a>
+)}
           </div>
         </div>
       </div>
