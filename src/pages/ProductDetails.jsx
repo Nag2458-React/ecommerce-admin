@@ -5,11 +5,11 @@ import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ProductReviews from "../components/ProductReviews";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 import StarRating from "../admin/pages/StarRating";
 import { db } from "../firebase/firebase";
 import Navbar from "./Navbar";
-
+import { FaShareAlt } from "react-icons/fa";
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,12 +18,15 @@ const ProductDetails = () => {
   const [mainImage, setMainImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [recentProducts, setRecentProducts] = useState([]);
 
-  const {  wishlist,  addToWishlist,  removeFromWishlist,} = useWishlist();
+
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   useEffect(() => {
     getProduct();
-  }, []);
+  }, [id]);
 
   const getProduct = async () => {
     try {
@@ -38,7 +41,22 @@ const ProductDetails = () => {
         };
         console.log("FULL PRODUCT", data);
         console.log("COLORS", data.colors);
-        setProduct(data);
+       setProduct(data);
+
+// Recently Viewed
+let recent =
+  JSON.parse(localStorage.getItem("recentProducts")) || [];
+
+recent = recent.filter((item) => item.id !== data.id);
+
+recent.unshift(data);
+
+recent = recent.slice(0, 8);
+
+localStorage.setItem(
+  "recentProducts",
+  JSON.stringify(recent)
+);
 
         const passedColor = location.state?.selectedColor;
 
@@ -58,6 +76,67 @@ const ProductDetails = () => {
       console.log(error);
     }
   };
+  useEffect(() => {
+  if (!product) return;
+
+  const loadData = async () => {
+    try {
+      // ==========================
+      // Related Products
+      // ==========================
+      const snapshot = await getDocs(
+        collection(db, "products")
+      );
+
+      const allProducts = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const sameCategory = allProducts.filter(
+        (item) =>
+          item.id !== product.id &&
+          item.category?.trim().toLowerCase() ===
+            product.category?.trim().toLowerCase()
+      );
+
+      const related =
+        sameCategory.length > 0
+          ? sameCategory
+          : allProducts.filter(
+              (item) => item.id !== product.id
+            );
+
+      setRelatedProducts(related.slice(0, 4));
+
+      // ==========================
+      // Recently Viewed
+      // ==========================
+      let recent =
+        JSON.parse(
+          localStorage.getItem("recentProducts")
+        ) || [];
+
+      // Current product remove
+      recent = recent.filter(
+        (item) => item.id !== product.id
+      );
+
+      setRecentProducts(recent.slice(0, 4));
+
+      console.log("Related:", related);
+      console.log("Recent:", recent);
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  loadData();
+}, [product]);
+
+
+
 
   if (!product) {
     return <h3 className="text-center mt-5">Loading...</h3>;
@@ -100,63 +179,49 @@ const ProductDetails = () => {
   //   }
   // };
 
-
   const handleWishlist = async () => {
-  if (product.sizes?.length > 0 && !selectedSize) {
-    alert("Please Select Size");
-    return;
-  }
+    if (product.sizes?.length > 0 && !selectedSize) {
+      alert("Please Select Size");
+      return;
+    }
 
-  if (product.colors?.length > 0 && !selectedColor) {
-    alert("Please Select Color");
-    return;
-  }
+    if (product.colors?.length > 0 && !selectedColor) {
+      alert("Please Select Color");
+      return;
+    }
 
-  const alreadyWishlisted = wishlist.some(
-    (item) =>
-      item.productId === product.id &&
-      (item.selectedSize || "") === selectedSize &&
-      (item.selectedColor?.name || "") === selectedColor?.name
-  );
-
-  if (alreadyWishlisted) {
-    await removeFromWishlist(
-      product.id,
-      selectedSize,
-      selectedColor?.name
+    const alreadyWishlisted = wishlist.some(
+      (item) =>
+        item.productId === product.id &&
+        (item.selectedSize || "") === selectedSize &&
+        (item.selectedColor?.name || "") === selectedColor?.name,
     );
 
-    alert("Removed From Wishlist");
-  } else {
-    await addToWishlist(
-      product,
-      selectedSize,
-      selectedColor
-    );
+    if (alreadyWishlisted) {
+      await removeFromWishlist(product.id, selectedSize, selectedColor?.name);
 
-    alert("Added To Wishlist");
-  }
-};
- const handleAddToCart = async () => {
+      alert("Removed From Wishlist");
+    } else {
+      await addToWishlist(product, selectedSize, selectedColor);
 
-  if (product.sizes?.length > 0 && !selectedSize) {
-    alert("Please Select Size");
-    return;
-  }
+      alert("Added To Wishlist");
+    }
+  };
+  const handleAddToCart = async () => {
+    if (product.sizes?.length > 0 && !selectedSize) {
+      alert("Please Select Size");
+      return;
+    }
 
-  if (product.colors?.length > 0 && !selectedColor) {
-    alert("Please Select Color");
-    return;
-  }
+    if (product.colors?.length > 0 && !selectedColor) {
+      alert("Please Select Color");
+      return;
+    }
 
-  await addToCart(
-    product,
-    selectedSize,
-    selectedColor
-  );
+    await addToCart(product, selectedSize, selectedColor);
 
-  alert("Added To Cart");
-};
+    alert("Added To Cart");
+  };
 
   // const buyNow = () => {
   //   addToCart();
@@ -178,37 +243,58 @@ const ProductDetails = () => {
     });
   };
 
-const buyNow = () => {
-  if (product.sizes?.length > 0 && !selectedSize) {
-    alert("Please Select Size");
-    return;
-  }
+  const buyNow = () => {
+    if (product.sizes?.length > 0 && !selectedSize) {
+      alert("Please Select Size");
+      return;
+    }
 
-  if (product.colors?.length > 0 && !selectedColor) {
-    alert("Please Select Color");
-    return;
-  }
+    if (product.colors?.length > 0 && !selectedColor) {
+      alert("Please Select Color");
+      return;
+    }
 
-  navigate("/whatsapp-order", {
-    state: {
-      buyNow: true,
-      product: {
-        ...product,
-        qty: 1,
-        selectedSize,
-        selectedColor,
+    navigate("/whatsapp-order", {
+      state: {
+        buyNow: true,
+        product: {
+          ...product,
+          qty: 1,
+          selectedSize,
+          selectedColor,
+        },
       },
-    },
-  });
+    });
+  };
+
+  const handleShare = async () => {
+  const productUrl = `${window.location.origin}/product/${product.id}`;
+
+  const shareData = {
+    title: product.category,
+    text: `Check out this beautiful product: ${product.category}`,
+    url: productUrl,
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(productUrl);
+      alert("Product link copied to clipboard.");
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 
   const alreadyWishlisted = wishlist.some(
-  (item) =>
-    item.productId === product.id &&
-    (item.selectedSize || "") === selectedSize &&
-    (item.selectedColor?.name || "") === selectedColor?.name
-);
+    (item) =>
+      item.productId === product.id &&
+      (item.selectedSize || "") === selectedSize &&
+      (item.selectedColor?.name || "") === selectedColor?.name,
+  );
   return (
     <>
       <Navbar />
@@ -293,9 +379,7 @@ const buyNow = () => {
               <div className="d-flex align-items-center gap-2">
                 <StarRating rating={product.rating || 4.5} />
 
-                <span className="">
-                  {product.rating || 4.5}
-                </span>
+                <span className="">{product.rating || 4.5}</span>
 
                 <small className="text-muted">(125 Reviews)</small>
               </div>
@@ -382,7 +466,7 @@ const buyNow = () => {
                   <strong>Quantity:</strong> {product.quantity}
                 </p>
               </div>
-<ProductReviews product={product} />
+              <ProductReviews product={product} />
               <div className="card p-3 mb-3 pd-card">
                 <h5>Description</h5>
                 <p>{product.description}</p>
@@ -481,6 +565,77 @@ const buyNow = () => {
 
                 <p>✔ Secure Packaging</p>
               </div>
+              <h4 className="mt-4 mb-3">You May Also Like</h4>
+
+              <div className="row">
+                {relatedProducts.map((item) => (
+                  <div className="col-md-3 mb-3" key={item.id}>
+                    <div
+                      className="card h-100 shadow-sm"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        navigate(`/product/${item.id}`);
+                        window.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        });
+                      }}
+                    >
+                      <img
+                        src={item.colors?.[0]?.image || item.imagePath}
+                        className="card-img-top"
+                        style={{
+                          height: "170px",
+                          objectFit: "cover",
+                        }}
+                      />
+
+                      <div className="card-body text-center">
+                        <h6>{item.category}</h6>
+
+                        <div className="fw-bold text-success">
+                          ₹{item.discountPrice || item.price}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {recentProducts.length > 0 && (
+                <>
+                  <h4 className="mt-4 mb-3">🕒 Recently Viewed</h4>
+
+                  <div className="row">
+                    {recentProducts.slice(0, 4).map((item) => (
+                      <div className="col-md-3 mb-3" key={item.id}>
+                        <div
+                          className="card h-100 shadow-sm"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => navigate(`/product/${item.id}`)}
+                        >
+                          <img
+                            src={item.colors?.[0]?.image || item.imagePath}
+                            className="card-img-top"
+                            style={{
+                              height: "170px",
+                              objectFit: "cover",
+                            }}
+                          />
+
+                          <div className="card-body text-center">
+                            <h6>{item.category}</h6>
+
+                            <div className="fw-bold text-success">
+                              ₹{item.discountPrice || item.price}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
               <div
                 className="d-flex justify-content-end gap-2"
@@ -492,32 +647,25 @@ const buyNow = () => {
                   zIndex: 100,
                 }}
               >
-<button
-  className={`btn ${
-    alreadyWishlisted
-      ? "btn-danger"
-      : "btn-outline-danger"
-  }`}
-  onClick={handleWishlist}
->
-  {alreadyWishlisted
-    ? "❤️ Wishlisted"
-    : "🤍 Wishlist"}
-</button>
+                <button
+                  className={`btn ${
+                    alreadyWishlisted ? "btn-danger" : "btn-outline-danger"
+                  }`}
+                  onClick={handleWishlist}
+                >
+                  {alreadyWishlisted ? "❤️ Wishlisted" : "🤍 Wishlist"}
+                </button>
 
-               <button
-  className="btn btn-primary"
-  onClick={handleAddToCart}
->
-  🛒 Add To Cart
-</button>
-<button
-  className="btn btn-success"
-  onClick={buyNow}
->
-  ⚡ Buy Now
-</button>
-
+                <button className="btn btn-primary" onClick={handleAddToCart}>
+                  🛒 Add To Cart
+                </button>
+                <button className="btn btn-success" onClick={buyNow}>
+                  ⚡ Buy Now
+                </button>
+                <button className="btn btn-warning" onClick={handleShare}>
+                  <FaShareAlt className="me-1" />
+                  Share
+                </button>
                 {/* <button className="btn btn-success" onClick={buyNow}>
                 ⚡ Buy Now
               </button> */}
