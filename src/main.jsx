@@ -6,6 +6,7 @@ from "react-dom/client";
 import App from "./App";
 
 import "./index.css";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -18,7 +19,9 @@ createRoot(
 
   <StrictMode>
 
-    <App />
+     <ThemeProvider>
+      <App />
+    </ThemeProvider>
 
   </StrictMode>
 
